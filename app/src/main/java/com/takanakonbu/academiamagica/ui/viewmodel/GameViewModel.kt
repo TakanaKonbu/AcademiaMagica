@@ -40,7 +40,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 kotlinx.coroutines.delay(1000) // 1秒待機
                 _gameState.update { currentState ->
                     val manaPerSecond = BigDecimal.ONE.add(BigDecimal(currentState.philosophersStones))
-                    currentState.copy(mana = currentState.mana.add(manaPerSecond))
+                    val goldPerSecond = currentState.facilities[FacilityType.RESEARCH_WING]?.level?.let { BigDecimal(it) } ?: BigDecimal.ZERO
+                    currentState.copy(
+                        mana = currentState.mana.add(manaPerSecond),
+                        gold = currentState.gold.add(goldPerSecond)
+                    )
                 }
                 saveGame()
             }
@@ -74,13 +78,20 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun upgradeFacility(type: FacilityType) {
         _gameState.update { currentState ->
             val facilityState = currentState.facilities[type] ?: return@update currentState
-            val cost = BigDecimal(20).pow(facilityState.level)
 
-            if (currentState.mana < cost) {
+            val manaCost = BigDecimal(20).pow(facilityState.level)
+            var goldCost = BigDecimal.ZERO
+
+            if (type == FacilityType.DIMENSIONAL_LIBRARY) {
+                goldCost = BigDecimal(100).pow(facilityState.level)
+            }
+
+            if (currentState.mana < manaCost || currentState.gold < goldCost) {
                 return@update currentState
             }
 
-            val newMana = currentState.mana.subtract(cost)
+            val newMana = currentState.mana.subtract(manaCost)
+            val newGold = currentState.gold.subtract(goldCost)
 
             val currentFacilities = currentState.facilities.toMutableMap()
             currentFacilities[type] = facilityState.copy(level = facilityState.level + 1)
@@ -89,6 +100,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
             currentState.copy(
                 mana = newMana,
+                gold = newGold,
                 facilities = currentFacilities,
                 totalMagicalPower = newTotalMagicalPower
             )
@@ -97,7 +109,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun recruitStudent() {
         _gameState.update { currentState ->
-            // 生徒一人あたりのコスト（仮）
             val cost = BigDecimal(100).multiply(BigDecimal(currentState.students.totalStudents + 1))
 
             if (currentState.mana < cost) {

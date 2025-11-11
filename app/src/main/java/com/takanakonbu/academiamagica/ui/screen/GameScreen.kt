@@ -65,6 +65,8 @@ fun OverallPowerCard(
     totalMagicalPower: BigDecimal,
     currentMana: BigDecimal,
     manaPerSecond: BigDecimal,
+    currentGold: BigDecimal,
+    goldPerSecond: BigDecimal,
     totalStudents: Int
 ) {
     Card(
@@ -127,6 +129,37 @@ fun OverallPowerCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // ゴールド
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "ゴールド",
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
+                Text(
+                    text = formatInflationNumber(currentGold),
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Text(
+                text = "(+${formatInflationNumber(goldPerSecond)}/秒)",
+                modifier = Modifier.fillMaxWidth(),
+                fontFamily = FontFamily.Serif,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                textAlign = TextAlign.End
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // 生徒数
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -157,8 +190,10 @@ fun UpgradeItemCard(
     level: Int? = null,
     maxLevel: Int? = null,
     effect: String,
-    cost: BigDecimal,
-    resource: BigDecimal,
+    manaCost: BigDecimal,
+    goldCost: BigDecimal = BigDecimal.ZERO,
+    currentMana: BigDecimal,
+    currentGold: BigDecimal,
     onUpgrade: () -> Unit
 ) {
     Card(
@@ -188,11 +223,16 @@ fun UpgradeItemCard(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = onUpgrade,
-                enabled = resource >= cost,
+                enabled = currentMana >= manaCost && currentGold >= goldCost,
                 modifier = Modifier.align(Alignment.End),
                 shape = RoundedCornerShape(2.dp)
             ) {
-                Text(text = "強化 (コスト: ${formatInflationNumber(cost)})", fontFamily = FontFamily.Serif)
+                val costText = if (goldCost > BigDecimal.ZERO) {
+                    "強化 (マナ: ${formatInflationNumber(manaCost)}, ゴールド: ${formatInflationNumber(goldCost)})"
+                } else {
+                    "強化 (コスト: ${formatInflationNumber(manaCost)})"
+                }
+                Text(text = costText, fontFamily = FontFamily.Serif)
             }
         }
     }
@@ -202,6 +242,7 @@ fun UpgradeItemCard(
 fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
     val gameState by gameViewModel.gameState.collectAsState()
     val manaPerSecond = BigDecimal.ONE.add(BigDecimal(gameState.philosophersStones))
+    val goldPerSecond = gameState.facilities[FacilityType.RESEARCH_WING]?.level?.let { BigDecimal(it) } ?: BigDecimal.ZERO
 
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
         item {
@@ -209,6 +250,8 @@ fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 totalMagicalPower = gameState.totalMagicalPower,
                 currentMana = gameState.mana,
                 manaPerSecond = manaPerSecond,
+                currentGold = gameState.gold,
+                goldPerSecond = goldPerSecond,
                 totalStudents = gameState.students.totalStudents
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -230,8 +273,9 @@ fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
             UpgradeItemCard(
                 name = "生徒募集",
                 effect = "生徒が1人増える",
-                cost = cost,
-                resource = gameState.mana,
+                manaCost = cost,
+                currentMana = gameState.mana,
+                currentGold = gameState.gold,
                 onUpgrade = { gameViewModel.recruitStudent() }
             )
         }
@@ -255,8 +299,9 @@ fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 level = state.level,
                 maxLevel = 100, // Dummy Data
                 effect = "+${state.level + 1} マナ/秒", // Dummy Data
-                cost = cost,
-                resource = gameState.mana,
+                manaCost = cost,
+                currentMana = gameState.mana,
+                currentGold = gameState.gold,
                 onUpgrade = { gameViewModel.upgradeDepartment(type) }
             )
         }
@@ -274,14 +319,20 @@ fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
         }
 
         items(gameState.facilities.entries.toList()) { (type, state) ->
-            val cost = BigDecimal(20).pow(state.level)
+            val manaCost = BigDecimal(20).pow(state.level)
+            var goldCost = BigDecimal.ZERO
+            if (type == FacilityType.DIMENSIONAL_LIBRARY) {
+                goldCost = BigDecimal(100).pow(state.level)
+            }
             UpgradeItemCard(
                 name = type.toJapanese(),
                 level = state.level,
                 maxLevel = 50, // Dummy Data
-                effect = "総合魔力ボーナス +${state.level * 5}%", // Dummy Data
-                cost = cost,
-                resource = gameState.mana,
+                effect = if (type == FacilityType.RESEARCH_WING) "+${state.level + 1} ゴールド/秒" else "総合魔力ボーナス +${state.level * 5}%",
+                manaCost = manaCost,
+                goldCost = goldCost,
+                currentMana = gameState.mana,
+                currentGold = gameState.gold,
                 onUpgrade = { gameViewModel.upgradeFacility(type) }
             )
         }
