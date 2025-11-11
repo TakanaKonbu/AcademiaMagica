@@ -2,6 +2,7 @@ package com.takanakonbu.academiamagica.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.takanakonbu.academiamagica.model.DepartmentType
 import com.takanakonbu.academiamagica.model.GameState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +28,15 @@ class GameViewModel : ViewModel() {
                 }
                 saveGame()
             }
+        }
+    }
+
+    fun upgradeDepartment(type: DepartmentType) {
+        _gameState.update { currentState ->
+            val currentDepartments = currentState.departments.toMutableMap()
+            val departmentState = currentDepartments[type] ?: return@update currentState
+            currentDepartments[type] = departmentState.copy(level = departmentState.level + 1)
+            currentState.copy(departments = currentDepartments)
         }
     }
 

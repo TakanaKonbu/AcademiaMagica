@@ -32,7 +32,7 @@ fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
         gameState.departments.forEach { (type, state) ->
             Row {
                 Text(text = "${type.name}: Lv ${state.level}")
-                Button(onClick = { /*TODO*/ }) {
+                Button(onClick = { gameViewModel.upgradeDepartment(type) }) {
                     Text(text = "Level Up")
                 }
             }
