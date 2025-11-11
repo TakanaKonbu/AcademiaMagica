@@ -49,6 +49,12 @@ fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 }
             }
         }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        Button(onClick = { gameViewModel.prestige() }) {
+            Text(text = "Prestige")
+        }
     }
 }
 
