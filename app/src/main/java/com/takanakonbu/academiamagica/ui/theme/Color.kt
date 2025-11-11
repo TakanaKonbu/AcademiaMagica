@@ -2,8 +2,8 @@ package com.takanakonbu.academiamagica.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val DarkBrown = Color(0xFF1C1611)
-val Parchment = Color(0xFFF5EEDC)
-val DarkParchment = Color(0xFFDCD3B1)
-val Sepia = Color(0xFF704214)
-val Gold = Color(0xFFFFD700)
+// Design Theme Colors
+val DeepIndigo = Color(0xFF1A112A)
+val ParchmentWhite = Color(0xFFE0E0FF)
+val MutedGold = Color(0xFFC7A450)
+val AmethystPurple = Color(0xFF9966CC) // For Progress Bar

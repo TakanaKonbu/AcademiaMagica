@@ -1,7 +1,6 @@
 package com.takanakonbu.academiamagica.ui.theme
 
 import android.app.Activity
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
@@ -11,21 +10,18 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Gold,
-    secondary = Sepia,
-    tertiary = DarkParchment,
-    background = DarkBrown,
-    surface = DarkBrown,
-    onPrimary = DarkBrown,
-    onSecondary = Parchment,
-    onTertiary = Sepia,
-    onBackground = Parchment,
-    onSurface = Parchment,
+    primary = MutedGold,
+    secondary = AmethystPurple,
+    background = DeepIndigo,
+    surface = DeepIndigo,
+    onPrimary = DeepIndigo,
+    onSecondary = ParchmentWhite,
+    onBackground = ParchmentWhite,
+    onSurface = ParchmentWhite,
 )
 
 @Composable
 fun AcademiaMagicaTheme(
-    darkTheme: Boolean = true, // Always dark theme
     content: @Composable () -> Unit
 ) {
     val colorScheme = DarkColorScheme
@@ -33,8 +29,8 @@ fun AcademiaMagicaTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            window.statusBarColor = colorScheme.background.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
 
