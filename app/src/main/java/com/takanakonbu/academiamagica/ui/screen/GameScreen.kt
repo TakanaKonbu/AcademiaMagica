@@ -32,9 +32,11 @@ import com.takanakonbu.academiamagica.model.FacilityType
 import com.takanakonbu.academiamagica.ui.theme.AmethystPurple
 import com.takanakonbu.academiamagica.ui.viewmodel.GameViewModel
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.text.DecimalFormat
 
 private fun formatInflationNumber(value: BigDecimal): String {
+    if (value.compareTo(BigDecimal.ZERO) == 0) return "0.00"
     val threshold = BigDecimal("1E6")
     return if (value >= threshold) {
         DecimalFormat("0.00E0").format(value)
@@ -43,21 +45,18 @@ private fun formatInflationNumber(value: BigDecimal): String {
     }
 }
 
-private fun DepartmentType.toJapanese(): String {
-    return when (this) {
-        DepartmentType.ATTACK_MAGIC -> "攻撃魔法"
-        DepartmentType.BOTANY -> "植物学"
-        DepartmentType.DEFENSE_MAGIC -> "防衛魔法"
-        DepartmentType.ANCIENT_MAGIC -> "古代魔術"
-    }
+// UI表示用の日本語変換
+private fun DepartmentType.toJapanese(): String = when (this) {
+    DepartmentType.ATTACK_MAGIC -> "攻撃魔法"
+    DepartmentType.BOTANY -> "植物学"
+    DepartmentType.DEFENSE_MAGIC -> "防衛魔法"
+    DepartmentType.ANCIENT_MAGIC -> "古代魔術"
 }
 
-private fun FacilityType.toJapanese(): String {
-    return when (this) {
-        FacilityType.GREAT_HALL -> "大講堂"
-        FacilityType.RESEARCH_WING -> "研究棟"
-        FacilityType.DIMENSIONAL_LIBRARY -> "次元図書館"
-    }
+private fun FacilityType.toJapanese(): String = when (this) {
+    FacilityType.GREAT_HALL -> "大講堂"
+    FacilityType.RESEARCH_WING -> "研究棟"
+    FacilityType.DIMENSIONAL_LIBRARY -> "次元図書館"
 }
 
 @Composable
@@ -67,118 +66,36 @@ fun OverallPowerCard(
     manaPerSecond: BigDecimal,
     currentGold: BigDecimal,
     goldPerSecond: BigDecimal,
-    totalStudents: Int
+    totalStudents: Int,
+    maxStudents: Int
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
         shape = RoundedCornerShape(2.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // 総合魔力
-            Text(
-                text = "総合魔力",
-                fontFamily = FontFamily.Serif,
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-            )
+        Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "総合魔力", fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = formatInflationNumber(totalMagicalPower),
-                fontFamily = FontFamily.Serif,
-                fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Text(text = formatInflationNumber(totalMagicalPower), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 32.sp, color = MaterialTheme.colorScheme.primary)
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // マナ
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "マナ",
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                )
-                Text(
-                    text = formatInflationNumber(currentMana),
-                    fontFamily = FontFamily.Serif,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            // リソース表示
+            listOf("マナ" to (currentMana to manaPerSecond), "ゴールド" to (currentGold to goldPerSecond)).forEach { (label, values) ->
+                val (current, perSecond) = values
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = label, fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                    Text(text = formatInflationNumber(current), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
+                }
+                Text(text = "(+${formatInflationNumber(perSecond)}/秒)", modifier = Modifier.fillMaxWidth(), fontFamily = FontFamily.Serif, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), textAlign = TextAlign.End)
+                Spacer(modifier = Modifier.height(16.dp))
             }
-            Text(
-                text = "(+${formatInflationNumber(manaPerSecond)}/秒)",
-                modifier = Modifier.fillMaxWidth(),
-                fontFamily = FontFamily.Serif,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                textAlign = TextAlign.End
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ゴールド
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "ゴールド",
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                )
-                Text(
-                    text = formatInflationNumber(currentGold),
-                    fontFamily = FontFamily.Serif,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-            Text(
-                text = "(+${formatInflationNumber(goldPerSecond)}/秒)",
-                modifier = Modifier.fillMaxWidth(),
-                fontFamily = FontFamily.Serif,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                textAlign = TextAlign.End
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             // 生徒数
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "生徒数",
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                )
-                Text(
-                    text = "$totalStudents 人",
-                    fontFamily = FontFamily.Serif,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "生徒数", fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                Text(text = "$totalStudents / $maxStudents 人", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -187,51 +104,34 @@ fun OverallPowerCard(
 @Composable
 fun UpgradeItemCard(
     name: String,
-    level: Int? = null,
+    level: Int,
     maxLevel: Int? = null,
     effect: String,
-    manaCost: BigDecimal,
-    goldCost: BigDecimal = BigDecimal.ZERO,
-    currentMana: BigDecimal,
-    currentGold: BigDecimal,
+    costText: String,
+    isEnabled: Boolean,
     onUpgrade: () -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
         shape = RoundedCornerShape(2.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = name, fontFamily = FontFamily.Serif, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            if (level != null) {
+            Spacer(modifier = Modifier.height(4.dp))
+            val levelText = if (maxLevel != null) "レベル: $level / $maxLevel" else "レベル: $level"
+            Text(text = levelText, fontFamily = FontFamily.Serif, fontSize = 16.sp)
+
+            if (maxLevel != null) {
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "レベル: $level", fontFamily = FontFamily.Serif, fontSize = 16.sp)
+                val progress = if (maxLevel > 0) level.toFloat() / maxLevel.toFloat() else 0f
+                LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth(), color = AmethystPurple, trackColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f))
             }
-            if (level != null && maxLevel != null) {
-                Spacer(modifier = Modifier.height(4.dp))
-                LinearProgressIndicator(
-                    progress = { level.toFloat() / maxLevel },
-                    modifier = Modifier.fillMaxWidth(),
-                    color = AmethystPurple,
-                    trackColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
-                )
-            }
+
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "効果: $effect", fontFamily = FontFamily.Serif, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = onUpgrade,
-                enabled = currentMana >= manaCost && currentGold >= goldCost,
-                modifier = Modifier.align(Alignment.End),
-                shape = RoundedCornerShape(2.dp)
-            ) {
-                val costText = if (goldCost > BigDecimal.ZERO) {
-                    "強化 (マナ: ${formatInflationNumber(manaCost)}, ゴールド: ${formatInflationNumber(goldCost)})"
-                } else {
-                    "強化 (コスト: ${formatInflationNumber(manaCost)})"
-                }
+            Button(onClick = onUpgrade, enabled = isEnabled, modifier = Modifier.align(Alignment.End), shape = RoundedCornerShape(2.dp)) {
                 Text(text = costText, fontFamily = FontFamily.Serif)
             }
         }
@@ -241,99 +141,81 @@ fun UpgradeItemCard(
 @Composable
 fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
     val gameState by gameViewModel.gameState.collectAsState()
-    val manaPerSecond = BigDecimal.ONE.add(BigDecimal(gameState.philosophersStones))
-    val goldPerSecond = gameState.facilities[FacilityType.RESEARCH_WING]?.level?.let { BigDecimal(it) } ?: BigDecimal.ZERO
+
+    val botanyMultiplier = BigDecimal.ONE + (gameState.departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
+    val manaPerSecond = gameState.students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
+    val goldPerSecond = manaPerSecond.divide(BigDecimal(2), 2, RoundingMode.HALF_UP)
 
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
         item {
+            val maxStudents = (gameState.facilities[FacilityType.GREAT_HALL]?.level ?: 0) * 10
             OverallPowerCard(
                 totalMagicalPower = gameState.totalMagicalPower,
                 currentMana = gameState.mana,
                 manaPerSecond = manaPerSecond,
                 currentGold = gameState.gold,
                 goldPerSecond = goldPerSecond,
-                totalStudents = gameState.students.totalStudents
+                totalStudents = gameState.students.totalStudents,
+                maxStudents = maxStudents
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
 
+        // --- 生徒カテゴリ ---
+        item { Text("運営", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
         item {
-            Text(
-                text = "運営",
-                fontFamily = FontFamily.Serif,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-        }
-
-        item {
-            val cost = BigDecimal(100).multiply(BigDecimal(gameState.students.totalStudents + 1))
+            val maxStudents = (gameState.facilities[FacilityType.GREAT_HALL]?.level ?: 0) * 10
+            val cost = BigDecimal("1.2").pow(gameState.students.totalStudents).multiply(BigDecimal(10))
             UpgradeItemCard(
                 name = "生徒募集",
-                effect = "生徒が1人増える",
-                manaCost = cost,
-                currentMana = gameState.mana,
-                currentGold = gameState.gold,
+                level = gameState.students.totalStudents,
+                maxLevel = maxStudents,
+                effect = "マナとゴールドの基本生産量を増加させる",
+                costText = "募集 (マナ: ${formatInflationNumber(cost)})",
+                isEnabled = gameState.mana >= cost && gameState.students.totalStudents < maxStudents,
                 onUpgrade = { gameViewModel.recruitStudent() }
             )
         }
 
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "学科",
-                fontFamily = FontFamily.Serif,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-        }
-
-        items(gameState.departments.entries.toList()) { (type, state) ->
-            val cost = BigDecimal(10).pow(state.level)
-            UpgradeItemCard(
-                name = type.toJapanese(),
-                level = state.level,
-                maxLevel = 100, // Dummy Data
-                effect = "+${state.level + 1} マナ/秒", // Dummy Data
-                manaCost = cost,
-                currentMana = gameState.mana,
-                currentGold = gameState.gold,
-                onUpgrade = { gameViewModel.upgradeDepartment(type) }
-            )
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "施設",
-                fontFamily = FontFamily.Serif,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-        }
-
+        // --- 施設カテゴリ ---
+        item { Spacer(Modifier.height(16.dp)); Text("施設", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
         items(gameState.facilities.entries.toList()) { (type, state) ->
-            val manaCost = BigDecimal(20).pow(state.level)
-            var goldCost = BigDecimal.ZERO
-            if (type == FacilityType.DIMENSIONAL_LIBRARY) {
-                goldCost = BigDecimal(100).pow(state.level)
+            val cost = BigDecimal("2.0").pow(state.level).multiply(BigDecimal(100))
+            val effectText = when(type) {
+                FacilityType.GREAT_HALL -> "生徒の最大定員を+10人増加させる"
+                FacilityType.RESEARCH_WING -> "全ての学科の最大レベルを+1引き上げる"
+                FacilityType.DIMENSIONAL_LIBRARY -> "学科の研究コストを1%ずつ削減する"
             }
             UpgradeItemCard(
                 name = type.toJapanese(),
                 level = state.level,
-                maxLevel = 50, // Dummy Data
-                effect = if (type == FacilityType.RESEARCH_WING) "+${state.level + 1} ゴールド/秒" else "総合魔力ボーナス +${state.level * 5}%",
-                manaCost = manaCost,
-                goldCost = goldCost,
-                currentMana = gameState.mana,
-                currentGold = gameState.gold,
+                effect = effectText,
+                costText = "改築 (ゴールド: ${formatInflationNumber(cost)})",
+                isEnabled = gameState.gold >= cost,
                 onUpgrade = { gameViewModel.upgradeFacility(type) }
+            )
+        }
+
+        // --- 学科カテゴリ ---
+        item { Spacer(Modifier.height(16.dp)); Text("学科", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
+        items(gameState.departments.entries.toList()) { (type, state) ->
+            val libraryDiscount = BigDecimal.ONE - (gameState.facilities[FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
+            val cost = BigDecimal("1.5").pow(state.level).multiply(BigDecimal(10)).multiply(libraryDiscount).setScale(0, RoundingMode.CEILING)
+            val maxLevel = gameState.facilities[FacilityType.RESEARCH_WING]?.level ?: 0
+            val effectText = when(type) {
+                DepartmentType.ATTACK_MAGIC -> "総合魔力の基本値を+10増加させる"
+                DepartmentType.BOTANY -> "マナとゴールドの生産量に+10%の乗算ボーナス"
+                DepartmentType.DEFENSE_MAGIC -> "総合魔力に+5%の乗算ボーナス"
+                DepartmentType.ANCIENT_MAGIC -> "周回時の賢者の石獲得量に+2%ボーナス"
+            }
+            UpgradeItemCard(
+                name = type.toJapanese(),
+                level = state.level,
+                maxLevel = maxLevel,
+                effect = effectText,
+                costText = "研究 (マナ: ${formatInflationNumber(cost)})",
+                isEnabled = gameState.mana >= cost && state.level < maxLevel,
+                onUpgrade = { gameViewModel.upgradeDepartment(type) }
             )
         }
     }
