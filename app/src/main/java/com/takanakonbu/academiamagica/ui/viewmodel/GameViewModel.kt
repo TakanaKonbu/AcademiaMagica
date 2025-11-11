@@ -14,6 +14,7 @@ class GameViewModel : ViewModel() {
     val gameState: StateFlow<GameState> = _gameState
 
     init {
+        loadGame()
         startGameLoop()
     }
 
@@ -24,7 +25,16 @@ class GameViewModel : ViewModel() {
                 _gameState.update { currentState ->
                     currentState.copy(mana = currentState.mana.add(java.math.BigDecimal.ONE))
                 }
+                saveGame()
             }
         }
+    }
+
+    fun saveGame() {
+        // TODO: Implement save logic (e.g., using DataStore or SharedPreferences)
+    }
+
+    fun loadGame() {
+        // TODO: Implement load logic
     }
 }
