@@ -47,16 +47,16 @@ private fun formatInflationNumber(value: BigDecimal): String {
 
 // UI表示用の日本語変換
 private fun DepartmentType.toJapanese(): String = when (this) {
-    DepartmentType.ATTACK_MAGIC -> "攻撃魔法"
-    DepartmentType.BOTANY -> "植物学"
-    DepartmentType.DEFENSE_MAGIC -> "防衛魔法"
-    DepartmentType.ANCIENT_MAGIC -> "古代魔術"
+    DepartmentType.ATTACK_MAGIC -> "🔥攻撃魔法"
+    DepartmentType.BOTANY -> "🌿植物学"
+    DepartmentType.DEFENSE_MAGIC -> "🛡️防衛魔法"
+    DepartmentType.ANCIENT_MAGIC -> "📖古代魔術"
 }
 
 private fun FacilityType.toJapanese(): String = when (this) {
-    FacilityType.GREAT_HALL -> "大講堂"
-    FacilityType.RESEARCH_WING -> "研究棟"
-    FacilityType.DIMENSIONAL_LIBRARY -> "次元図書館"
+    FacilityType.GREAT_HALL -> "🏰大講堂"
+    FacilityType.RESEARCH_WING -> "💡研究棟"
+    FacilityType.DIMENSIONAL_LIBRARY -> "📚️次元図書館"
 }
 
 @Composable
