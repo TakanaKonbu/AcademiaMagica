@@ -50,6 +50,26 @@ fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Facilities")
+        gameState.facilities.forEach { (type, state) ->
+            val cost = BigDecimal(20).pow(state.level)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "${type.name}: Lv ${state.level}")
+                Button(
+                    onClick = { gameViewModel.upgradeFacility(type) },
+                    enabled = gameState.mana >= cost
+                ) {
+                    Text(text = "Level Up (Cost: ${formatBigDecimal(cost)})")
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(onClick = { gameViewModel.prestige() }) {

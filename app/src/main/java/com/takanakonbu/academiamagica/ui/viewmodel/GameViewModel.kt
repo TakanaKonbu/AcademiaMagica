@@ -7,6 +7,7 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.takanakonbu.academiamagica.model.DepartmentType
+import com.takanakonbu.academiamagica.model.FacilityType
 import com.takanakonbu.academiamagica.model.GameState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -57,13 +58,50 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val currentDepartments = currentState.departments.toMutableMap()
             currentDepartments[type] = departmentState.copy(level = departmentState.level + 1)
 
-            currentState.copy(mana = newMana, departments = currentDepartments)
+            val newTotalMagicalPower = calculateTotalMagicalPower(currentDepartments, currentState.facilities)
+
+            currentState.copy(
+                mana = newMana,
+                departments = currentDepartments,
+                totalMagicalPower = newTotalMagicalPower
+            )
         }
+    }
+
+    fun upgradeFacility(type: FacilityType) {
+        _gameState.update { currentState ->
+            val facilityState = currentState.facilities[type] ?: return@update currentState
+            // コスト計算式は学科と少し変えておく
+            val cost = BigDecimal(20).pow(facilityState.level)
+
+            if (currentState.mana < cost) {
+                return@update currentState
+            }
+
+            val newMana = currentState.mana.subtract(cost)
+
+            val currentFacilities = currentState.facilities.toMutableMap()
+            currentFacilities[type] = facilityState.copy(level = facilityState.level + 1)
+
+            val newTotalMagicalPower = calculateTotalMagicalPower(currentState.departments, currentFacilities)
+
+            currentState.copy(
+                mana = newMana,
+                facilities = currentFacilities,
+                totalMagicalPower = newTotalMagicalPower
+            )
+        }
+    }
+
+    private fun calculateTotalMagicalPower(departments: Map<DepartmentType, com.takanakonbu.academiamagica.model.DepartmentState>, facilities: Map<FacilityType, com.takanakonbu.academiamagica.model.FacilityState>): BigDecimal {
+        val totalDepartmentLevel = departments.values.sumOf { it.level }
+        val totalFacilityLevel = facilities.values.sumOf { it.level }
+        return BigDecimal((totalDepartmentLevel + totalFacilityLevel) * 10)
     }
 
     fun prestige() {
         _gameState.update { currentState ->
-            val totalLevels = currentState.departments.values.sumOf { it.level }
+            val totalLevels = currentState.departments.values.sumOf { it.level } + currentState.facilities.values.sumOf { it.level }
             val newStones = totalLevels / 10 // 仮：合計レベル10ごとに1つの石
 
             GameState(
