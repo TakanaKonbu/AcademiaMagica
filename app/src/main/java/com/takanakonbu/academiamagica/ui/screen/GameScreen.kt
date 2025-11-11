@@ -64,7 +64,8 @@ private fun FacilityType.toJapanese(): String {
 fun OverallPowerCard(
     totalMagicalPower: BigDecimal,
     currentMana: BigDecimal,
-    manaPerSecond: BigDecimal
+    manaPerSecond: BigDecimal,
+    totalStudents: Int
 ) {
     Card(
         modifier = Modifier
@@ -123,6 +124,29 @@ fun OverallPowerCard(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                 textAlign = TextAlign.End
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 生徒数
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "生徒数",
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
+                Text(
+                    text = "$totalStudents 人",
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
 }
@@ -130,8 +154,8 @@ fun OverallPowerCard(
 @Composable
 fun UpgradeItemCard(
     name: String,
-    level: Int,
-    maxLevel: Int,
+    level: Int? = null,
+    maxLevel: Int? = null,
     effect: String,
     cost: BigDecimal,
     resource: BigDecimal,
@@ -146,15 +170,19 @@ fun UpgradeItemCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = name, fontFamily = FontFamily.Serif, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "レベル: $level", fontFamily = FontFamily.Serif, fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(4.dp))
-            LinearProgressIndicator(
-                progress = { level.toFloat() / maxLevel },
-                modifier = Modifier.fillMaxWidth(),
-                color = AmethystPurple,
-                trackColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
-            )
+            if (level != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "レベル: $level", fontFamily = FontFamily.Serif, fontSize = 16.sp)
+            }
+            if (level != null && maxLevel != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                LinearProgressIndicator(
+                    progress = { level.toFloat() / maxLevel },
+                    modifier = Modifier.fillMaxWidth(),
+                    color = AmethystPurple,
+                    trackColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f)
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "効果: $effect", fontFamily = FontFamily.Serif, fontSize = 14.sp)
             Spacer(modifier = Modifier.height(16.dp))
@@ -180,8 +208,35 @@ fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
             OverallPowerCard(
                 totalMagicalPower = gameState.totalMagicalPower,
                 currentMana = gameState.mana,
-                manaPerSecond = manaPerSecond
+                manaPerSecond = manaPerSecond,
+                totalStudents = gameState.students.totalStudents
             )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        item {
+            Text(
+                text = "運営",
+                fontFamily = FontFamily.Serif,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
+        item {
+            val cost = BigDecimal(100).multiply(BigDecimal(gameState.students.totalStudents + 1))
+            UpgradeItemCard(
+                name = "生徒募集",
+                effect = "生徒が1人増える",
+                cost = cost,
+                resource = gameState.mana,
+                onUpgrade = { gameViewModel.recruitStudent() }
+            )
+        }
+
+        item {
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "学科",
