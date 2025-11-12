@@ -1,5 +1,6 @@
 package com.takanakonbu.academiamagica
 
+import android.media.MediaPlayer
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,9 +34,13 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private val gameViewModel: GameViewModel by viewModels()
+    private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mediaPlayer = MediaPlayer.create(this, R.raw.bgm)
+        mediaPlayer?.isLooping = true
 
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val controller = WindowInsetsControllerCompat(window, window.decorView)
@@ -90,5 +95,21 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mediaPlayer?.start()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        mediaPlayer?.pause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer?.release()
+        mediaPlayer = null
     }
 }
