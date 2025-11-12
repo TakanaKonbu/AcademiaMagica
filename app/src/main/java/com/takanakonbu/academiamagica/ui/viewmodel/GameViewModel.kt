@@ -56,7 +56,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (currentState.students.unassignedStudents <= 0) return@update currentState
             val currentAssignments = currentState.students.specializedStudents.toMutableMap()
             currentAssignments[department] = (currentAssignments[department] ?: 0) + 1
-            currentState.copy(students = currentState.students.copy(specializedStudents = currentAssignments))
+            val updatedState = currentState.copy(students = currentState.students.copy(specializedStudents = currentAssignments))
+            updatedState.copy(totalMagicalPower = calculateTotalMagicalPower(updatedState))
         }
     }
 
@@ -66,7 +67,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (assigned <= 0) return@update currentState
             val currentAssignments = currentState.students.specializedStudents.toMutableMap()
             currentAssignments[department] = assigned - 1
-            currentState.copy(students = currentState.students.copy(specializedStudents = currentAssignments))
+            val updatedState = currentState.copy(students = currentState.students.copy(specializedStudents = currentAssignments))
+            updatedState.copy(totalMagicalPower = calculateTotalMagicalPower(updatedState))
         }
     }
 
@@ -85,11 +87,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val currentDepartments = currentState.departments.toMutableMap()
             currentDepartments[type] = departmentState.copy(level = departmentState.level + 1)
 
-            currentState.copy(
+            val updatedState = currentState.copy(
                 mana = newMana,
-                departments = currentDepartments,
-                totalMagicalPower = calculateTotalMagicalPower(currentState)
+                departments = currentDepartments
             )
+            updatedState.copy(totalMagicalPower = calculateTotalMagicalPower(updatedState))
         }
     }
 
@@ -106,11 +108,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val currentFacilities = currentState.facilities.toMutableMap()
             currentFacilities[type] = facilityState.copy(level = facilityState.level + 1)
 
-            currentState.copy(
+            val updatedState = currentState.copy(
                 gold = newGold,
-                facilities = currentFacilities,
-                totalMagicalPower = calculateTotalMagicalPower(currentState)
+                facilities = currentFacilities
             )
+            updatedState.copy(totalMagicalPower = calculateTotalMagicalPower(updatedState))
         }
     }
 
@@ -126,11 +128,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val newMana = currentState.mana.subtract(cost)
             val newStudents = currentState.students.copy(totalStudents = currentState.students.totalStudents + 1)
 
-            currentState.copy(
+            val updatedState = currentState.copy(
                 mana = newMana,
-                students = newStudents,
-                totalMagicalPower = calculateTotalMagicalPower(currentState.copy(students = newStudents))
+                students = newStudents
             )
+            updatedState.copy(totalMagicalPower = calculateTotalMagicalPower(updatedState))
         }
     }
 
@@ -145,11 +147,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val currentSkills = currentState.prestigeSkills.toMutableMap()
             currentSkills[type] = skillState.copy(level = skillState.level + 1)
 
-            currentState.copy(
+            val updatedState = currentState.copy(
                 philosophersStones = newStones,
-                prestigeSkills = currentSkills,
-                totalMagicalPower = calculateTotalMagicalPower(currentState.copy(prestigeSkills = currentSkills))
+                prestigeSkills = currentSkills
             )
+            updatedState.copy(totalMagicalPower = calculateTotalMagicalPower(updatedState))
         }
     }
 
