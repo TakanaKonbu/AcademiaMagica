@@ -2,6 +2,7 @@ package com.takanakonbu.academiamagica.model
 
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.Random
 
 data class RivalSchool(val rank: Int, val name: String, val power: BigDecimal)
 
@@ -33,10 +34,20 @@ object SchoolRanking {
         var currentPower = BigDecimal("30000")
         val multiplier = BigDecimal("1.75")
 
+        // 固定のシード値でランダム生成することで、起動ごとに名前が変わらないようにする
+        val random = Random(12345L) // 固定シード
+        val shuffledNames = schoolNames.shuffled(random)
+        var nameIndex = 0
+
         // 99位から1位までを生成
         for (i in 99 downTo 1) {
-            // 1位の名前は固定、他はランダム
-            val name = if (i == 1) "天上魔法学府アークメイジ" else schoolNames.random()
+            // 1位の名前は固定、他はシャッフルされたリストから順番に使う
+            val name = if (i == 1) {
+                "天上魔法学府アークメイジ"
+            } else {
+                // リストのサイズを超えたら循環して名前を再利用する
+                shuffledNames[nameIndex++ % shuffledNames.size]
+            }
 
             // 小数点以下を切り捨ててリストに追加
             schools.add(RivalSchool(rank = i, name = name, power = currentPower.setScale(0, RoundingMode.FLOOR)))
