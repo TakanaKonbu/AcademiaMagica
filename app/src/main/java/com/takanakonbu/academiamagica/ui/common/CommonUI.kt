@@ -76,7 +76,8 @@ fun UpgradeItemCard(
     effect: String,
     costText: String,
     isEnabled: Boolean,
-    onUpgrade: () -> Unit
+    onUpgrade: () -> Unit,
+    showLevel: Boolean = true
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
@@ -85,9 +86,11 @@ fun UpgradeItemCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = name, fontFamily = FontFamily.Serif, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(4.dp))
-            val levelText = if (maxLevel != null) "レベル: $level / $maxLevel" else "レベル: $level"
-            Text(text = levelText, fontFamily = FontFamily.Serif, fontSize = 16.sp)
+            if (showLevel) {
+                Spacer(modifier = Modifier.height(4.dp))
+                val levelText = if (maxLevel != null) "レベル: $level / $maxLevel" else "レベル: $level"
+                Text(text = levelText, fontFamily = FontFamily.Serif, fontSize = 16.sp)
+            }
 
             if (maxLevel != null) {
                 Spacer(modifier = Modifier.height(4.dp))

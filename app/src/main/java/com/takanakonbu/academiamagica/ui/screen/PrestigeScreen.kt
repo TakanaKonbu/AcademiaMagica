@@ -75,7 +75,8 @@ fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 effect = "世界をリセットし、総合魔力に応じた賢者の石を獲得する。(${formatInflationNumber(gameState.totalMagicalPower)} -> $newStones 石)",
                 costText = "実行",
                 isEnabled = newStones > 0,
-                onUpgrade = { gameViewModel.prestige() }
+                onUpgrade = { gameViewModel.prestige() },
+                showLevel = false
             )
         }
 
