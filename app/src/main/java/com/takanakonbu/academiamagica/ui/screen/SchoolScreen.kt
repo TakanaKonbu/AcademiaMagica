@@ -62,20 +62,5 @@ fun SchoolScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 onUpgrade = { gameViewModel.recruitStudent() }
             )
         }
-
-        // --- 周回カテゴリ ---
-        item { Spacer(Modifier.height(16.dp)); Text("✨ 超越", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
-        item {
-            val ancientMagicBonus = 1.0 + (gameState.departments[DepartmentType.ANCIENT_MAGIC]?.level?.toDouble()?.times(0.1) ?: 0.0)
-            val newStones = if (gameState.totalMagicalPower <= BigDecimal.ONE) 0 else (Math.log10(gameState.totalMagicalPower.toDouble()) * ancientMagicBonus).toLong()
-            UpgradeItemCard(
-                name = "💫 周回リセット",
-                level = gameState.philosophersStones.toInt(),
-                effect = "世界をリセットし、総合魔力に応じた賢者の石を獲得する。(${formatInflationNumber(gameState.totalMagicalPower)} -> $newStones 石)",
-                costText = "実行",
-                isEnabled = newStones > 0,
-                onUpgrade = { gameViewModel.prestige() }
-            )
-        }
     }
 }

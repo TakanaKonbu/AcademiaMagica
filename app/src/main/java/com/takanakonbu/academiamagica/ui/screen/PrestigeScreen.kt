@@ -1,10 +1,103 @@
 package com.takanakonbu.academiamagica.ui.screen
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.takanakonbu.academiamagica.model.PrestigeSkillType
+import com.takanakonbu.academiamagica.ui.common.OverallPowerCard
+import com.takanakonbu.academiamagica.ui.common.UpgradeItemCard
+import com.takanakonbu.academiamagica.ui.common.formatInflationNumber
 import com.takanakonbu.academiamagica.ui.viewmodel.GameViewModel
+import java.math.BigDecimal
+import java.math.RoundingMode
+
+private fun PrestigeSkillType.toJapanese(): String = when (this) {
+    PrestigeSkillType.MANA_BOOST -> "✨ マナ生産量ボーナス"
+    PrestigeSkillType.GOLD_BOOST -> "💰 ゴールド生産量ボーナス"
+    PrestigeSkillType.RESEARCH_DISCOUNT -> "📚 学科研究コスト割引"
+    PrestigeSkillType.FACILITY_DISCOUNT -> "🏰 施設改築コスト割引"
+    PrestigeSkillType.STONE_BOOST -> "💎 賢者の石獲得量ボーナス"
+}
 
 @Composable
 fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
-    // TODO: 実装
+    val gameState by gameViewModel.gameState.collectAsState()
+
+    val botanyMultiplier = BigDecimal.ONE + (gameState.departments[com.takanakonbu.academiamagica.model.DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
+    val manaPerSecond = gameState.students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
+    val goldPerSecond = manaPerSecond.divide(BigDecimal(2), 2, RoundingMode.HALF_UP)
+
+    LazyColumn(modifier = Modifier.padding(paddingValues)) {
+        item {
+            val maxStudents = (gameState.facilities[com.takanakonbu.academiamagica.model.FacilityType.GREAT_HALL]?.level ?: 0) * 10
+            OverallPowerCard(
+                totalMagicalPower = gameState.totalMagicalPower,
+                currentMana = gameState.mana,
+                manaPerSecond = manaPerSecond,
+                currentGold = gameState.gold,
+                goldPerSecond = goldPerSecond,
+                totalStudents = gameState.students.totalStudents,
+                maxStudents = maxStudents,
+                philosophersStones = gameState.philosophersStones
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // --- 周回カテゴリ ---
+        item { Text("✨ 超越リセット", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
+        item {
+            val stoneBoost = 1.0 + (gameState.prestigeSkills[PrestigeSkillType.STONE_BOOST]?.level?.toDouble()?.times(0.05) ?: 0.0)
+            val ancientMagicBonus = 1.0 + (gameState.departments[com.takanakonbu.academiamagica.model.DepartmentType.ANCIENT_MAGIC]?.level?.toDouble()?.times(0.1) ?: 0.0)
+            val newStones = if (gameState.totalMagicalPower <= BigDecimal.ONE) 0 else (Math.log10(gameState.totalMagicalPower.toDouble()) * ancientMagicBonus * stoneBoost).toLong()
+            UpgradeItemCard(
+                name = "💫 周回リセット",
+                level = gameState.philosophersStones.toInt(),
+                effect = "世界をリセットし、総合魔力に応じた賢者の石を獲得する。(${formatInflationNumber(gameState.totalMagicalPower)} -> $newStones 石)",
+                costText = "実行",
+                isEnabled = newStones > 0,
+                onUpgrade = { gameViewModel.prestige() }
+            )
+        }
+
+        // --- 超越スキルカテゴリ ---
+        item { Spacer(Modifier.height(16.dp)); Text("💎 超越スキル", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
+        items(gameState.prestigeSkills.entries.toList()) { (type, state) ->
+            val cost = (state.level + 1).toLong()
+            val effectText = when(type) {
+                PrestigeSkillType.MANA_BOOST -> "マナの生産量がレベル毎に+10%されます。"
+                PrestigeSkillType.GOLD_BOOST -> "ゴールドの生産量がレベル毎に+10%されます。"
+                PrestigeSkillType.RESEARCH_DISCOUNT -> "学科の研究コストがレベル毎に-1%されます。"
+                PrestigeSkillType.FACILITY_DISCOUNT -> "施設の改築コストがレベル毎に-1%されます。"
+                PrestigeSkillType.STONE_BOOST -> "周回時の賢者の石獲得量がレベル毎に+5%されます。"
+            }
+            UpgradeItemCard(
+                name = type.toJapanese(),
+                level = state.level,
+                effect = effectText,
+                costText = "強化 (賢者の石: $cost)",
+                isEnabled = gameState.philosophersStones >= cost,
+                onUpgrade = { gameViewModel.upgradePrestigeSkill(type) }
+            )
+        }
+    }
 }
