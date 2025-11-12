@@ -83,7 +83,8 @@ fun OverallPowerCard(
     currentGold: BigDecimal,
     goldPerSecond: BigDecimal,
     totalStudents: Int,
-    maxStudents: Int
+    maxStudents: Int,
+    philosophersStones: Long
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -98,7 +99,10 @@ fun OverallPowerCard(
             Spacer(modifier = Modifier.height(24.dp))
 
             // リソース表示
-            listOf("♦️ マナ" to (currentMana to manaPerSecond), "💰 ゴールド" to (currentGold to goldPerSecond)).forEach { (label, values) ->
+            listOf(
+                "♦️ マナ" to (currentMana to manaPerSecond),
+                "💰 ゴールド" to (currentGold to goldPerSecond)
+            ).forEach { (label, values) ->
                 val (current, perSecond) = values
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text(text = label, fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
@@ -107,6 +111,36 @@ fun OverallPowerCard(
                 Text(text = "(+${formatInflationNumber(perSecond)}/秒)", modifier = Modifier.fillMaxWidth(), fontFamily = FontFamily.Serif, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), textAlign = TextAlign.End)
                 Spacer(modifier = Modifier.height(16.dp))
             }
+
+            // 賢者の石
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "💎 賢者の石",
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
+                Text(
+                    text = "$philosophersStones 個",
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Text(
+                text = "(総合魔力+${philosophersStones * 10}%)",
+                modifier = Modifier.fillMaxWidth(),
+                fontFamily = FontFamily.Serif,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                textAlign = TextAlign.End
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
             // 生徒数
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {

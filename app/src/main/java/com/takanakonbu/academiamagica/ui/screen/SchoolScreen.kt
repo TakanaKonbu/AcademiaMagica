@@ -41,7 +41,8 @@ fun SchoolScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 currentGold = gameState.gold,
                 goldPerSecond = goldPerSecond,
                 totalStudents = gameState.students.totalStudents,
-                maxStudents = maxStudents
+                maxStudents = maxStudents,
+                philosophersStones = gameState.philosophersStones
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
