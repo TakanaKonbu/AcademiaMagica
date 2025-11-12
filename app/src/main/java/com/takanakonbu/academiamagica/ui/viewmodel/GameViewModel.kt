@@ -55,22 +55,22 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _gameState.update { it.copy(schoolName = name) }
     }
 
-    fun assignStudent(department: DepartmentType) {
+    fun assignStudent(department: DepartmentType, amount: Int = 1) {
         _gameState.update { currentState ->
-            if (currentState.students.unassignedStudents <= 0) return@update currentState
+            if (currentState.students.unassignedStudents < amount) return@update currentState
             val currentAssignments = currentState.students.specializedStudents.toMutableMap()
-            currentAssignments[department] = (currentAssignments[department] ?: 0) + 1
+            currentAssignments[department] = (currentAssignments[department] ?: 0) + amount
             val updatedState = currentState.copy(students = currentState.students.copy(specializedStudents = currentAssignments))
             updatedState.copy(totalMagicalPower = calculateTotalMagicalPower(updatedState))
         }
     }
 
-    fun unassignStudent(department: DepartmentType) {
+    fun unassignStudent(department: DepartmentType, amount: Int = 1) {
         _gameState.update { currentState ->
             val assigned = currentState.students.specializedStudents[department] ?: 0
-            if (assigned <= 0) return@update currentState
+            if (assigned < amount) return@update currentState
             val currentAssignments = currentState.students.specializedStudents.toMutableMap()
-            currentAssignments[department] = assigned - 1
+            currentAssignments[department] = assigned - amount
             val updatedState = currentState.copy(students = currentState.students.copy(specializedStudents = currentAssignments))
             updatedState.copy(totalMagicalPower = calculateTotalMagicalPower(updatedState))
         }

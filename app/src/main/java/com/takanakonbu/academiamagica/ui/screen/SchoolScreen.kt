@@ -1,6 +1,7 @@
 package com.takanakonbu.academiamagica.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,10 +13,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -39,6 +45,9 @@ private fun DepartmentType.toJapanese(): String = when (this) {
 @Composable
 fun SchoolScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
     val gameState by gameViewModel.gameState.collectAsState()
+    var assignmentAmount by remember { mutableStateOf(1) }
+    val options = listOf(1, 5, 10, 50, 100)
+    var expanded by remember { mutableStateOf(false) }
 
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
         item {
@@ -76,8 +85,25 @@ fun SchoolScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
         item { Spacer(Modifier.height(16.dp)); Text("🎓 生徒配属", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
         item {
             Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Text("未配属の生徒: ${gameState.students.unassignedStudents}人", fontFamily = FontFamily.Serif, fontSize = 16.sp)
+                    Box {
+                        Button(onClick = { expanded = true }) {
+                            Text("$assignmentAmount")
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            options.forEach { option ->
+                                DropdownMenuItem(text = { Text(text = option.toString()) }, onClick = { assignmentAmount = option; expanded = false })
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -98,11 +124,11 @@ fun SchoolScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                     ) {
                         Text(text = department.toJapanese(), fontFamily = FontFamily.Serif, fontSize = 18.sp)
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Button(onClick = { gameViewModel.unassignStudent(department) }, enabled = (gameState.students.specializedStudents[department] ?: 0) > 0) {
+                            Button(onClick = { gameViewModel.unassignStudent(department, assignmentAmount) }, enabled = (gameState.students.specializedStudents[department] ?: 0) >= assignmentAmount) {
                                 Text("-")
                             }
                             Text("${gameState.students.specializedStudents[department] ?: 0}", modifier = Modifier.padding(horizontal = 8.dp), fontFamily = FontFamily.Serif, fontSize = 16.sp)
-                            Button(onClick = { gameViewModel.assignStudent(department) }, enabled = gameState.students.unassignedStudents > 0) {
+                            Button(onClick = { gameViewModel.assignStudent(department, assignmentAmount) }, enabled = gameState.students.unassignedStudents >= assignmentAmount) {
                                 Text("+")
                             }
                         }
