@@ -11,6 +11,7 @@ import com.takanakonbu.academiamagica.model.GameState
 import com.takanakonbu.academiamagica.model.PrestigeSkillType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -24,6 +25,9 @@ private val Application.dataStore by preferencesDataStore(name = "game_state")
 class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState
+
+    private val _isLoading = MutableStateFlow(true)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val gameStateKey = stringPreferencesKey("game_state_json")
 
@@ -212,9 +216,14 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadGame() {
         viewModelScope.launch {
-            val stateJson = getApplication<Application>().dataStore.data.first()[gameStateKey]
-            if (stateJson != null) {
-                _gameState.value = Json.decodeFromString<GameState>(stateJson)
+            _isLoading.value = true
+            try {
+                val stateJson = getApplication<Application>().dataStore.data.first()[gameStateKey]
+                if (stateJson != null) {
+                    _gameState.value = Json.decodeFromString<GameState>(stateJson)
+                }
+            } finally {
+                _isLoading.value = false
             }
         }
     }

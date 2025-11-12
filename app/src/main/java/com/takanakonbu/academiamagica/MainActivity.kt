@@ -45,12 +45,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             AcademiaMagicaTheme {
                 val gameState by gameViewModel.gameState.collectAsState()
+                val isLoading by gameViewModel.isLoading.collectAsState()
 
-                if (gameState.schoolName.isBlank()) {
+                if (!isLoading && gameState.schoolName.isBlank()) {
                     NameInputDialog(onNameSet = {
                         gameViewModel.setSchoolName(it)
                     })
-                } else {
+                } else if (!isLoading) {
                     val pagerState = rememberPagerState(pageCount = { navigationItems.size })
                     val coroutineScope = rememberCoroutineScope()
 
