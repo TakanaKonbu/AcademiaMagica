@@ -47,6 +47,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun setSchoolName(name: String) {
+        _gameState.update { it.copy(schoolName = name) }
+    }
+
     fun assignStudent(department: DepartmentType) {
         _gameState.update { currentState ->
             if (currentState.students.unassignedStudents <= 0) return@update currentState
@@ -189,6 +193,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val newStones = (Math.log10(currentState.totalMagicalPower.toDouble()) * ancientMagicBonus * stoneBoost * ancientMagicStudentBonus).toLong()
 
             GameState(
+                schoolName = currentState.schoolName, // 学校名を引き継ぐ
                 philosophersStones = currentState.philosophersStones + newStones,
                 prestigeSkills = currentState.prestigeSkills
             )

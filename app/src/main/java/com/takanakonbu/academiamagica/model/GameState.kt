@@ -25,6 +25,7 @@ object BigDecimalSerializer : KSerializer<BigDecimal> {
  */
 @Serializable
 data class GameState(
+    val schoolName: String = "",
     @Serializable(with = BigDecimalSerializer::class)
     val mana: BigDecimal = BigDecimal.ZERO,
     @Serializable(with = BigDecimalSerializer::class)

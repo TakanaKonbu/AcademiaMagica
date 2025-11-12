@@ -12,11 +12,14 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.takanakonbu.academiamagica.ui.common.NameInputDialog
 import com.takanakonbu.academiamagica.ui.navigation.navigationItems
 import com.takanakonbu.academiamagica.ui.screen.DepartmentScreen
 import com.takanakonbu.academiamagica.ui.screen.FacilityScreen
@@ -41,38 +44,46 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AcademiaMagicaTheme {
-                val pagerState = rememberPagerState(pageCount = { navigationItems.size })
-                val coroutineScope = rememberCoroutineScope()
+                val gameState by gameViewModel.gameState.collectAsState()
 
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    bottomBar = {
-                        NavigationBar {
-                            navigationItems.forEachIndexed { index, screen ->
-                                NavigationBarItem(
-                                    icon = { Icon(screen.icon, contentDescription = null) },
-                                    label = { Text(screen.title) },
-                                    selected = pagerState.currentPage == index,
-                                    onClick = {
-                                        coroutineScope.launch {
-                                            pagerState.animateScrollToPage(index)
+                if (gameState.schoolName.isBlank()) {
+                    NameInputDialog(onNameSet = {
+                        gameViewModel.setSchoolName(it)
+                    })
+                } else {
+                    val pagerState = rememberPagerState(pageCount = { navigationItems.size })
+                    val coroutineScope = rememberCoroutineScope()
+
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        bottomBar = {
+                            NavigationBar {
+                                navigationItems.forEachIndexed { index, screen ->
+                                    NavigationBarItem(
+                                        icon = { Icon(screen.icon, contentDescription = null) },
+                                        label = { Text(screen.title) },
+                                        selected = pagerState.currentPage == index,
+                                        onClick = {
+                                            coroutineScope.launch {
+                                                pagerState.animateScrollToPage(index)
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
-                    }
-                ) { innerPadding ->
-                    HorizontalPager(
-                        state = pagerState,
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        when (it) {
-                            0 -> SchoolScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
-                            1 -> FacilityScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
-                            2 -> DepartmentScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
-                            3 -> PrestigeScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
-                            4 -> RankingScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
+                    ) { innerPadding ->
+                        HorizontalPager(
+                            state = pagerState,
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+                            when (it) {
+                                0 -> SchoolScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
+                                1 -> FacilityScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
+                                2 -> DepartmentScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
+                                3 -> PrestigeScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
+                                4 -> RankingScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
+                            }
                         }
                     }
                 }

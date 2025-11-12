@@ -37,11 +37,11 @@ fun RankingScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
     val lazyListState = rememberLazyListState()
 
     // プレイヤーを含めたランキングリストを作成
-    val playerSchool = RivalSchool(rank = 0, name = "ユーザー", power = gameState.totalMagicalPower)
+    val playerSchool = RivalSchool(rank = 0, name = gameState.schoolName, power = gameState.totalMagicalPower)
     val fullRanking = (SchoolRanking.rivals + playerSchool).sortedByDescending { it.power }
 
     // プレイヤーの現在の順位と、次のランクのライバルを見つける
-    val playerRank = fullRanking.indexOfFirst { it.name == "ユーザー" } + 1
+    val playerRank = fullRanking.indexOfFirst { it.name == gameState.schoolName } + 1
     val nextRival = if (playerRank > 1) fullRanking[playerRank - 2] else null
 
     // プレイヤーの順位までスクロール
@@ -83,7 +83,7 @@ fun RankingScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
         // ランキングリスト
         LazyColumn(state = lazyListState) {
             itemsIndexed(fullRanking) { index, school ->
-                val isPlayer = school.name == "ユーザー"
+                val isPlayer = school.name == gameState.schoolName
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
