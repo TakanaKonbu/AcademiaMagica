@@ -45,11 +45,14 @@ data class GameState(
         DepartmentType.ANCIENT_MAGIC to DepartmentState()
     ),
     val facilities: Map<FacilityType, FacilityState> = mapOf(
-        FacilityType.GREAT_HALL to FacilityState(),
-        FacilityType.RESEARCH_WING to FacilityState(),
+        // 初期状態で生徒を10人まで収容可能にするため、レベルを1に設定
+        FacilityType.GREAT_HALL to FacilityState(level = 1),
+        // 初期状態で学科をレベル5までアップグレード可能にするため、レベルを1に設定
+        FacilityType.RESEARCH_WING to FacilityState(level = 1),
         FacilityType.DIMENSIONAL_LIBRARY to FacilityState()
     ),
-    val students: StudentState = StudentState()
+    // 初期状態でリソースが生産されるよう、生徒数を3人に設定
+    val students: StudentState = StudentState(totalStudents = 3)
 ) {
     /**
      * 研究棟のレベルに基づいて、全ての学科の最大レベルを計算する算出プロパティ。
