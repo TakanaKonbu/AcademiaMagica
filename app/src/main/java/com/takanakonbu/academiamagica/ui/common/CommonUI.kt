@@ -132,14 +132,6 @@ fun OverallPowerCard(
                     color = MaterialTheme.colorScheme.onSurface
                 )
             }
-            Text(
-                text = "(総合魔力+${philosophersStones * 10}%)",
-                modifier = Modifier.fillMaxWidth(),
-                fontFamily = FontFamily.Serif,
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                textAlign = TextAlign.End
-            )
             Spacer(modifier = Modifier.height(16.dp))
 
             // 生徒数
