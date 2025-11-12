@@ -15,14 +15,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.takanakonbu.academiamagica.model.DepartmentType
 import com.takanakonbu.academiamagica.model.FacilityType
 import com.takanakonbu.academiamagica.ui.common.OverallPowerCard
 import com.takanakonbu.academiamagica.ui.common.UpgradeItemCard
 import com.takanakonbu.academiamagica.ui.common.formatInflationNumber
 import com.takanakonbu.academiamagica.ui.viewmodel.GameViewModel
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 private fun FacilityType.toJapanese(): String = when (this) {
     FacilityType.GREAT_HALL -> "🏰 大講堂"
@@ -34,19 +32,15 @@ private fun FacilityType.toJapanese(): String = when (this) {
 fun FacilityScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
     val gameState by gameViewModel.gameState.collectAsState()
 
-    val botanyMultiplier = BigDecimal.ONE + (gameState.departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
-    val manaPerSecond = gameState.students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
-    val goldPerSecond = manaPerSecond.divide(BigDecimal(2), 2, RoundingMode.HALF_UP)
-
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
         item {
             val maxStudents = (gameState.facilities[FacilityType.GREAT_HALL]?.level ?: 0) * 10
             OverallPowerCard(
                 totalMagicalPower = gameState.totalMagicalPower,
                 currentMana = gameState.mana,
-                manaPerSecond = manaPerSecond,
+                manaPerSecond = gameState.manaPerSecond, // 修正
                 currentGold = gameState.gold,
-                goldPerSecond = goldPerSecond,
+                goldPerSecond = gameState.goldPerSecond, // 修正
                 totalStudents = gameState.students.totalStudents,
                 maxStudents = maxStudents,
                 philosophersStones = gameState.philosophersStones

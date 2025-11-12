@@ -35,19 +35,15 @@ private fun DepartmentType.toJapanese(): String = when (this) {
 fun DepartmentScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
     val gameState by gameViewModel.gameState.collectAsState()
 
-    val botanyMultiplier = BigDecimal.ONE + (gameState.departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
-    val manaPerSecond = gameState.students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
-    val goldPerSecond = manaPerSecond.divide(BigDecimal(2), 2, RoundingMode.HALF_UP)
-
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
         item {
             val maxStudents = (gameState.facilities[FacilityType.GREAT_HALL]?.level ?: 0) * 10
             OverallPowerCard(
                 totalMagicalPower = gameState.totalMagicalPower,
                 currentMana = gameState.mana,
-                manaPerSecond = manaPerSecond,
+                manaPerSecond = gameState.manaPerSecond, // 修正
                 currentGold = gameState.gold,
-                goldPerSecond = goldPerSecond,
+                goldPerSecond = gameState.goldPerSecond, // 修正
                 totalStudents = gameState.students.totalStudents,
                 maxStudents = maxStudents,
                 philosophersStones = gameState.philosophersStones

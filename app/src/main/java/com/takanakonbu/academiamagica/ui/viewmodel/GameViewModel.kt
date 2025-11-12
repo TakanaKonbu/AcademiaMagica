@@ -37,22 +37,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             while (true) {
                 kotlinx.coroutines.delay(1000) // 1秒待機
                 _gameState.update { currentState ->
-                    // --- 生徒配属によるボーナス ---
-                    val botanyStudentBonus = BigDecimal.ONE + (currentState.students.specializedStudents[DepartmentType.BOTANY]?.toBigDecimal()?.multiply(BigDecimal("0.05")) ?: BigDecimal.ZERO)
-
-                    // --- 超越スキルによるボーナス ---
-                    val manaBoost = BigDecimal.ONE + (currentState.prestigeSkills[PrestigeSkillType.MANA_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
-                    val goldBoost = BigDecimal.ONE + (currentState.prestigeSkills[PrestigeSkillType.GOLD_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
-
-                    val botanyMultiplier = BigDecimal.ONE + (currentState.departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
-                    val baseProduction = currentState.students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
-
-                    val manaPerSecond = baseProduction.multiply(botanyStudentBonus).multiply(manaBoost)
-                    val goldPerSecond = baseProduction.divide(BigDecimal(2), 2, RoundingMode.HALF_UP).multiply(botanyStudentBonus).multiply(goldBoost)
-
                     currentState.copy(
-                        mana = currentState.mana.add(manaPerSecond),
-                        gold = currentState.gold.add(goldPerSecond)
+                        mana = currentState.mana.add(currentState.manaPerSecond),
+                        gold = currentState.gold.add(currentState.goldPerSecond)
                     )
                 }
                 saveGame()

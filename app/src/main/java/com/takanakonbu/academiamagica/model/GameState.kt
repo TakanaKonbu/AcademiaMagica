@@ -8,6 +8,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 object BigDecimalSerializer : KSerializer<BigDecimal> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("BigDecimal", PrimitiveKind.STRING)
@@ -56,6 +57,30 @@ data class GameState(
      */
     val maxDepartmentLevel: Int
         get() = (facilities[FacilityType.RESEARCH_WING]?.level ?: 0) * 5
+
+    /**
+     * 毎秒のマナ生産量を計算する。すべてのボーナス（学科レベル、生徒配属、超越スキル）を含む。
+     */
+    val manaPerSecond: BigDecimal
+        get() {
+            val botanyStudentBonus = BigDecimal.ONE + (students.specializedStudents[DepartmentType.BOTANY]?.toBigDecimal()?.multiply(BigDecimal("0.05")) ?: BigDecimal.ZERO)
+            val manaBoost = BigDecimal.ONE + (prestigeSkills[PrestigeSkillType.MANA_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
+            val botanyMultiplier = BigDecimal.ONE + (departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
+            val baseProduction = students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
+            return baseProduction.multiply(botanyStudentBonus).multiply(manaBoost)
+        }
+
+    /**
+     * 毎秒のゴールド生産量を計算する。すべてのボーナス（学科レベル、生徒配属、超越スキル）を含む。
+     */
+    val goldPerSecond: BigDecimal
+        get() {
+            val botanyStudentBonus = BigDecimal.ONE + (students.specializedStudents[DepartmentType.BOTANY]?.toBigDecimal()?.multiply(BigDecimal("0.05")) ?: BigDecimal.ZERO)
+            val goldBoost = BigDecimal.ONE + (prestigeSkills[PrestigeSkillType.GOLD_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
+            val botanyMultiplier = BigDecimal.ONE + (departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
+            val baseProduction = students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
+            return baseProduction.divide(BigDecimal(2), 2, RoundingMode.HALF_UP).multiply(botanyStudentBonus).multiply(goldBoost)
+        }
 }
 
 @Serializable
