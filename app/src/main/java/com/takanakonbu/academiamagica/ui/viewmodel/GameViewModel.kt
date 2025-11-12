@@ -6,14 +6,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.takanakonbu.academiamagica.model.DepartmentState
 import com.takanakonbu.academiamagica.model.DepartmentType
-import com.takanakonbu.academiamagica.model.FacilityState
-import com.takanakonbu.academiamagica.model.FacilityType
 import com.takanakonbu.academiamagica.model.GameState
-import com.takanakonbu.academiamagica.model.PrestigeSkillState
 import com.takanakonbu.academiamagica.model.PrestigeSkillType
-import com.takanakonbu.academiamagica.model.StudentState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -42,13 +37,18 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             while (true) {
                 kotlinx.coroutines.delay(1000) // 1秒待機
                 _gameState.update { currentState ->
-                    // 超越スキル：マナ・ゴールド生産量ボーナス
+                    // --- 生徒配属によるボーナス ---
+                    val botanyStudentBonus = BigDecimal.ONE + (currentState.students.specializedStudents[DepartmentType.BOTANY]?.toBigDecimal()?.multiply(BigDecimal("0.05")) ?: BigDecimal.ZERO)
+
+                    // --- 超越スキルによるボーナス ---
                     val manaBoost = BigDecimal.ONE + (currentState.prestigeSkills[PrestigeSkillType.MANA_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
                     val goldBoost = BigDecimal.ONE + (currentState.prestigeSkills[PrestigeSkillType.GOLD_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
 
                     val botanyMultiplier = BigDecimal.ONE + (currentState.departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
-                    val manaPerSecond = currentState.students.totalStudents.toBigDecimal().multiply(botanyMultiplier).multiply(manaBoost)
-                    val goldPerSecond = currentState.students.totalStudents.toBigDecimal().multiply(botanyMultiplier).divide(BigDecimal(2), 2, RoundingMode.HALF_UP).multiply(goldBoost)
+                    val baseProduction = currentState.students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
+
+                    val manaPerSecond = baseProduction.multiply(botanyStudentBonus).multiply(manaBoost)
+                    val goldPerSecond = baseProduction.divide(BigDecimal(2), 2, RoundingMode.HALF_UP).multiply(botanyStudentBonus).multiply(goldBoost)
 
                     currentState.copy(
                         mana = currentState.mana.add(manaPerSecond),
@@ -60,15 +60,32 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun assignStudent(department: DepartmentType) {
+        _gameState.update { currentState ->
+            if (currentState.students.unassignedStudents <= 0) return@update currentState
+            val currentAssignments = currentState.students.specializedStudents.toMutableMap()
+            currentAssignments[department] = (currentAssignments[department] ?: 0) + 1
+            currentState.copy(students = currentState.students.copy(specializedStudents = currentAssignments))
+        }
+    }
+
+    fun unassignStudent(department: DepartmentType) {
+        _gameState.update { currentState ->
+            val assigned = currentState.students.specializedStudents[department] ?: 0
+            if (assigned <= 0) return@update currentState
+            val currentAssignments = currentState.students.specializedStudents.toMutableMap()
+            currentAssignments[department] = assigned - 1
+            currentState.copy(students = currentState.students.copy(specializedStudents = currentAssignments))
+        }
+    }
+
     fun upgradeDepartment(type: DepartmentType) {
         _gameState.update { currentState ->
             val departmentState = currentState.departments[type] ?: return@update currentState
-
             if (departmentState.level >= currentState.maxDepartmentLevel) return@update currentState
 
-            // 超越スキル：研究コスト割引
             val researchDiscount = BigDecimal.ONE - (currentState.prestigeSkills[PrestigeSkillType.RESEARCH_DISCOUNT]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
-            val libraryDiscount = BigDecimal.ONE - (currentState.facilities[FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
+            val libraryDiscount = BigDecimal.ONE - (currentState.facilities[com.takanakonbu.academiamagica.model.FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
             val cost = BigDecimal("1.5").pow(departmentState.level).multiply(BigDecimal(10)).multiply(libraryDiscount).multiply(researchDiscount).setScale(0, RoundingMode.CEILING)
 
             if (currentState.mana < cost) return@update currentState
@@ -85,11 +102,10 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun upgradeFacility(type: FacilityType) {
+    fun upgradeFacility(type: com.takanakonbu.academiamagica.model.FacilityType) {
         _gameState.update { currentState ->
             val facilityState = currentState.facilities[type] ?: return@update currentState
 
-            // 超越スキル：施設コスト割引
             val facilityDiscount = BigDecimal.ONE - (currentState.prestigeSkills[PrestigeSkillType.FACILITY_DISCOUNT]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
             val cost = BigDecimal("2.0").pow(facilityState.level).multiply(BigDecimal(100)).multiply(facilityDiscount)
 
@@ -109,7 +125,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun recruitStudent() {
         _gameState.update { currentState ->
-            val maxStudents = (currentState.facilities[FacilityType.GREAT_HALL]?.level ?: 0) * 10
+            val maxStudents = (currentState.facilities[com.takanakonbu.academiamagica.model.FacilityType.GREAT_HALL]?.level ?: 0) * 10
             if (currentState.students.totalStudents >= maxStudents) return@update currentState
 
             val cost = BigDecimal("1.2").pow(currentState.students.totalStudents).multiply(BigDecimal(10))
@@ -122,7 +138,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             currentState.copy(
                 mana = newMana,
                 students = newStudents,
-                totalMagicalPower = calculateTotalMagicalPower(currentState)
+                totalMagicalPower = calculateTotalMagicalPower(currentState.copy(students = newStudents))
             )
         }
     }
@@ -141,30 +157,34 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             currentState.copy(
                 philosophersStones = newStones,
                 prestigeSkills = currentSkills,
-                totalMagicalPower = calculateTotalMagicalPower(currentState.copy(prestigeSkills = currentSkills)) // スキル更新後の状態で再計算
+                totalMagicalPower = calculateTotalMagicalPower(currentState.copy(prestigeSkills = currentSkills))
             )
         }
     }
 
     private fun calculateTotalMagicalPower(state: GameState): BigDecimal {
-        val basePower = (state.departments[DepartmentType.ATTACK_MAGIC]?.level?.toBigDecimal()?.multiply(BigDecimal(10)) ?: BigDecimal.ZERO) + BigDecimal.ONE
+        // --- 生徒配属によるボーナス ---
+        val attackStudentBonus = state.students.specializedStudents[DepartmentType.ATTACK_MAGIC]?.toBigDecimal()?.multiply(BigDecimal(5)) ?: BigDecimal.ZERO
+        val defenseStudentBonus = BigDecimal.ONE + (state.students.specializedStudents[DepartmentType.DEFENSE_MAGIC]?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
+
+        val basePower = (state.departments[DepartmentType.ATTACK_MAGIC]?.level?.toBigDecimal()?.multiply(BigDecimal(10)) ?: BigDecimal.ZERO) + BigDecimal.ONE + attackStudentBonus
         val studentBonus = BigDecimal.ONE + state.students.totalStudents.toBigDecimal().multiply(BigDecimal("0.1"))
 
-        val facilityMultiplier = (BigDecimal("1.1").pow(state.facilities[FacilityType.GREAT_HALL]?.level ?: 0)).multiply(
-            BigDecimal("1.1").pow(state.facilities[FacilityType.RESEARCH_WING]?.level ?: 0)
+        val facilityMultiplier = (BigDecimal("1.1").pow(state.facilities[com.takanakonbu.academiamagica.model.FacilityType.GREAT_HALL]?.level ?: 0)).multiply(
+            BigDecimal("1.1").pow(state.facilities[com.takanakonbu.academiamagica.model.FacilityType.RESEARCH_WING]?.level ?: 0)
         )
 
         val departmentMultiplier = (BigDecimal.ONE + (state.departments[DepartmentType.BOTANY]?.level ?: 0).toBigDecimal().multiply(BigDecimal("0.05"))).multiply(
             (BigDecimal.ONE + (state.departments[DepartmentType.DEFENSE_MAGIC]?.level ?: 0).toBigDecimal().multiply(BigDecimal("0.05")))
         )
 
-        // 賢者の石による直接的なボーナスは廃止
         val ancientMagicBonus = (BigDecimal.ONE + (state.departments[DepartmentType.ANCIENT_MAGIC]?.level?.toBigDecimal()?.multiply(BigDecimal("0.02")) ?: BigDecimal.ZERO))
 
         val totalPower = basePower
             .multiply(studentBonus)
             .multiply(facilityMultiplier)
             .multiply(departmentMultiplier)
+            .multiply(defenseStudentBonus) // 防衛魔法科の生徒による乗算ボーナス
             .multiply(ancientMagicBonus)
 
         return totalPower.setScale(2, RoundingMode.HALF_UP)
@@ -172,13 +192,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun prestige() {
         _gameState.update { currentState ->
-            // 超越スキル：賢者の石獲得量ボーナス
+            // --- 生徒配属によるボーナス ---
+            val ancientMagicStudentBonus = 1.0 + (currentState.students.specializedStudents[DepartmentType.ANCIENT_MAGIC]?.toDouble()?.times(0.01) ?: 0.0)
+
+            // --- 超越スキルによるボーナス ---
             val stoneBoost = 1.0 + (currentState.prestigeSkills[PrestigeSkillType.STONE_BOOST]?.level?.toDouble()?.times(0.05) ?: 0.0)
             val ancientMagicBonus = 1.0 + (currentState.departments[DepartmentType.ANCIENT_MAGIC]?.level?.toDouble()?.times(0.1) ?: 0.0)
             if (currentState.totalMagicalPower <= BigDecimal.ONE) return@update currentState
-            val newStones = (Math.log10(currentState.totalMagicalPower.toDouble()) * ancientMagicBonus * stoneBoost).toLong()
+            val newStones = (Math.log10(currentState.totalMagicalPower.toDouble()) * ancientMagicBonus * stoneBoost * ancientMagicStudentBonus).toLong()
 
-            // ゲーム状態をリセットし、賢者の石と超越スキルレベルは引き継ぐ
             GameState(
                 philosophersStones = currentState.philosophersStones + newStones,
                 prestigeSkills = currentState.prestigeSkills

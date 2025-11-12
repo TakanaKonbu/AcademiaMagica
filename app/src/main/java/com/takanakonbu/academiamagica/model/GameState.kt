@@ -60,7 +60,14 @@ data class GameState(
 
 @Serializable
 enum class DepartmentType {
-    ATTACK_MAGIC, BOTANY, DEFENSE_MAGIC, ANCIENT_MAGIC
+    // 生徒配属効果: 1人につき総合魔力の基礎値+5
+    ATTACK_MAGIC,
+    // 生徒配属効果: 1人につきマナ・ゴールド生産量+5% (乗算)
+    BOTANY,
+    // 生徒配属効果: 1人につき総合魔力+1% (乗算)
+    DEFENSE_MAGIC,
+    // 生徒配属効果: 1人につき賢者の石獲得量+1% (乗算)
+    ANCIENT_MAGIC
 }
 
 @Serializable
@@ -75,7 +82,13 @@ enum class FacilityType {
 data class FacilityState(val level: Int = 0)
 
 @Serializable
-data class StudentState(val totalStudents: Int = 0, val specializedStudents: Map<DepartmentType, Int> = emptyMap())
+data class StudentState(
+    val totalStudents: Int = 0,
+    val specializedStudents: Map<DepartmentType, Int> = DepartmentType.values().associateWith { 0 }
+) {
+    val unassignedStudents: Int
+        get() = totalStudents - specializedStudents.values.sum()
+}
 
 /**
  * 超越（プレステージ）アップグレードの種類を定義するenum。
