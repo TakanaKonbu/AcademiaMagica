@@ -60,8 +60,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val departmentState = currentState.departments[type] ?: return@update currentState
 
             // 研究棟レベルを上限とする
-            val maxLevel = currentState.facilities[FacilityType.RESEARCH_WING]?.level ?: 0
-            if (departmentState.level >= maxLevel) return@update currentState
+            if (departmentState.level >= currentState.maxDepartmentLevel) return@update currentState
 
             // 次元図書館によるコスト削減
             val libraryDiscount = BigDecimal.ONE - (currentState.facilities[FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)

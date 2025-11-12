@@ -40,7 +40,10 @@ data class GameState(
         FacilityType.DIMENSIONAL_LIBRARY to FacilityState()
     ),
     val students: StudentState = StudentState()
-)
+) {
+    val maxDepartmentLevel: Int
+        get() = (facilities[FacilityType.RESEARCH_WING]?.level ?: 0) * 5
+}
 
 @Serializable
 enum class DepartmentType {

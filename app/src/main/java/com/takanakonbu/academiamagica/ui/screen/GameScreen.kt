@@ -185,7 +185,7 @@ fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
             val cost = BigDecimal("2.0").pow(state.level).multiply(BigDecimal(100))
             val effectText = when(type) {
                 FacilityType.GREAT_HALL -> "生徒の最大定員を+10人増加させる"
-                FacilityType.RESEARCH_WING -> "全ての学科の最大レベルを+1引き上げる"
+                FacilityType.RESEARCH_WING -> "全ての学科の最大レベルを+5引き上げる"
                 FacilityType.DIMENSIONAL_LIBRARY -> "学科の研究コストを1%ずつ削減する"
             }
             UpgradeItemCard(
@@ -203,7 +203,7 @@ fun GameScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
         items(gameState.departments.entries.toList()) { (type, state) ->
             val libraryDiscount = BigDecimal.ONE - (gameState.facilities[FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
             val cost = BigDecimal("1.5").pow(state.level).multiply(BigDecimal(10)).multiply(libraryDiscount).setScale(0, RoundingMode.CEILING)
-            val maxLevel = gameState.facilities[FacilityType.RESEARCH_WING]?.level ?: 0
+            val maxLevel = gameState.maxDepartmentLevel
             val effectText = when(type) {
                 DepartmentType.ATTACK_MAGIC -> "総合魔力の基本値を+10増加させる"
                 DepartmentType.BOTANY -> "マナとゴールドの生産量に+10%の乗算ボーナス"
