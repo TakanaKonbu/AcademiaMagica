@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.takanakonbu.academiamagica.model.SchoolRanking
 import com.takanakonbu.academiamagica.ui.theme.AmethystPurple
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -30,18 +31,14 @@ import java.text.DecimalFormat
 fun formatInflationNumber(value: BigDecimal): String {
     if (value.compareTo(BigDecimal.ZERO) == 0) return "0.00"
 
-    // 100万未満の数値はカンマ区切りで表示
     val million = BigDecimal("1E6")
     if (value < million) {
         return DecimalFormat("#,##0.00").format(value)
     }
 
-    // 大きな数値をアルファベット表記（A, B, ... AA, AB, ...）に変換
-    // 10^6, 10^9, 10^12... の単位で文字が変わる
     val magnitude = (value.toPlainString().length - 1) / 3
-    val index = magnitude - 2 // 10^6(Million)がA(index 0), 10^9(Billion)がB(index 1)
+    val index = magnitude - 2
 
-    // インデックスを基にアルファベットのサフィックスを生成する (A, B, ... Z, AA, AB, ...)
     fun getSuffix(i: Int): String {
         if (i < 0) return ""
         var n = i
@@ -55,7 +52,6 @@ fun formatInflationNumber(value: BigDecimal): String {
 
     val suffix = getSuffix(index)
 
-    // 表示用の数値を計算 (例: 1,230,000 -> 1.23)
     val divisor = BigDecimal.TEN.pow(magnitude * 3)
     val displayedValue = value.divide(divisor, 2, RoundingMode.FLOOR)
 
@@ -112,13 +108,19 @@ fun OverallPowerCard(
     maxStudents: Int,
     philosophersStones: Long
 ) {
+    val playerRank = (SchoolRanking.rivals.count { it.power > totalMagicalPower } + 1)
+
     Card(
         modifier = Modifier.fillMaxWidth().padding(8.dp),
         shape = RoundedCornerShape(2.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "💠 総合魔力", fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                Text(text = "💠 総合魔力", fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                Text(text = "($playerRank 位)", fontFamily = FontFamily.Serif, fontSize = 16.sp, color = MaterialTheme.colorScheme.secondary)
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = formatInflationNumber(totalMagicalPower), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 32.sp, color = MaterialTheme.colorScheme.primary)
 
