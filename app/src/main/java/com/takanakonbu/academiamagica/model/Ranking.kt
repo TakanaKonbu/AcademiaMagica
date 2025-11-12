@@ -1,6 +1,7 @@
 package com.takanakonbu.academiamagica.model
 
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 data class RivalSchool(val rank: Int, val name: String, val power: BigDecimal)
 
@@ -30,20 +31,21 @@ object SchoolRanking {
     private fun generateRivals(): List<RivalSchool> {
         val schools = mutableListOf<RivalSchool>()
         var currentPower = BigDecimal("30000")
+        val multiplier = BigDecimal("1.75")
 
-        // 99位から2位までを生成
-        for (i in 99 downTo 2) {
-            // ランダムな名前を選択
-            val name = schoolNames.random()
-            schools.add(RivalSchool(rank = i, name = name, power = currentPower))
-            // 次の順位の魔力は、現在の約1.5倍に設定
-            currentPower = currentPower.multiply(BigDecimal("1.5"))
+        // 99位から1位までを生成
+        for (i in 99 downTo 1) {
+            // 1位の名前は固定、他はランダム
+            val name = if (i == 1) "天上魔法学府アークメイジ" else schoolNames.random()
+
+            // 小数点以下を切り捨ててリストに追加
+            schools.add(RivalSchool(rank = i, name = name, power = currentPower.setScale(0, RoundingMode.FLOOR)))
+
+            // 次の順位の魔力を計算
+            currentPower = currentPower.multiply(multiplier)
         }
 
-        // 1位は別格の強さに設定
-        schools.add(RivalSchool(rank = 1, name = "天上魔法学府アークメイジ", power = BigDecimal("1E100")))
-
-        // ランク順にソートして返す
+        // ランク順（昇順）にソートして返す
         return schools.sortedBy { it.rank }
     }
 }
