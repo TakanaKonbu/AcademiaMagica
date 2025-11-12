@@ -19,6 +19,16 @@ object BigDecimalSerializer : KSerializer<BigDecimal> {
     }
 }
 
+/**
+ * ゲーム全体の状態を保持するデータクラス。
+ * @param mana 現在のマナ量
+ * @param gold 現在のゴールド量
+ * @param totalMagicalPower 総合魔力
+ * @param philosophersStones 賢者の石の所持数
+ * @param departments 各学科の状態
+ * @param facilities 各施設の状態
+ * @param students 生徒の状態
+ */
 @Serializable
 data class GameState(
     @Serializable(with = BigDecimalSerializer::class)
@@ -41,10 +51,18 @@ data class GameState(
     ),
     val students: StudentState = StudentState()
 ) {
+    /**
+     * 研究棟のレベルに基づいて、全ての学科の最大レベルを計算する算出プロパティ。
+     * 研究棟レベル1ごとに、最大レベルが5ずつ上昇する。
+     * この値を変更すると、ゲーム全体の学科最大レベル計算に反映される。
+     */
     val maxDepartmentLevel: Int
         get() = (facilities[FacilityType.RESEARCH_WING]?.level ?: 0) * 5
 }
 
+/**
+ * 学科の種類を定義するenum。
+ */
 @Serializable
 enum class DepartmentType {
     ATTACK_MAGIC,   // 攻撃魔法
@@ -53,11 +71,18 @@ enum class DepartmentType {
     ANCIENT_MAGIC   // 古代魔術
 }
 
+/**
+ * 各学科の状態を保持するデータクラス。
+ * @param level 現在の学科レベル
+ */
 @Serializable
 data class DepartmentState(
     val level: Int = 0
 )
 
+/**
+ * 施設の種類を定義するenum。
+ */
 @Serializable
 enum class FacilityType {
     GREAT_HALL,          // 大講堂
@@ -65,11 +90,20 @@ enum class FacilityType {
     DIMENSIONAL_LIBRARY  // 次元図書館
 }
 
+/**
+ * 各施設の状態を保持するデータクラス。
+ * @param level 現在の施設レベル
+ */
 @Serializable
 data class FacilityState(
     val level: Int = 0
 )
 
+/**
+ * 生徒の状態を保持するデータクラス。
+ * @param totalStudents 総生徒数
+ * @param specializedStudents 各学科に特化した生徒数（現在は未使用）
+ */
 @Serializable
 data class StudentState(
     val totalStudents: Int = 0,

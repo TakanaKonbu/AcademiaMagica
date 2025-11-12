@@ -59,7 +59,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _gameState.update { currentState ->
             val departmentState = currentState.departments[type] ?: return@update currentState
 
-            // 研究棟レベルを上限とする
+            // GameStateから最大レベルを取得し、上限に達しているかチェック
             if (departmentState.level >= currentState.maxDepartmentLevel) return@update currentState
 
             // 次元図書館によるコスト削減
