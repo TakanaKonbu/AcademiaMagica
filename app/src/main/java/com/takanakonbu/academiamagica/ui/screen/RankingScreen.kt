@@ -23,13 +23,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.takanakonbu.academiamagica.model.RivalSchool
 import com.takanakonbu.academiamagica.model.SchoolRanking
 import com.takanakonbu.academiamagica.ui.common.formatInflationNumber
 import com.takanakonbu.academiamagica.ui.viewmodel.GameViewModel
-import java.math.BigDecimal
 
 @Composable
 fun RankingScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
@@ -54,7 +54,10 @@ fun RankingScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
     Column(modifier = Modifier.padding(paddingValues)) {
         // 現在の順位と次の目標を表示するカード
         Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                modifier = Modifier.padding(16.dp).fillMaxWidth(), // 中央揃えのためにfillMaxWidthを追加
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text("現在の順位", fontFamily = FontFamily.Serif, fontSize = 20.sp)
                 Text("$playerRank 位 / 100校", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 32.sp, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(16.dp))
@@ -91,7 +94,7 @@ fun RankingScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 ) {
                     Text((index + 1).toString(), modifier = Modifier.weight(1f))
                     Text(school.name, modifier = Modifier.weight(3f))
-                    Text(formatInflationNumber(school.power), modifier = Modifier.weight(2f), textAlign = androidx.compose.ui.text.style.TextAlign.End)
+                    Text(formatInflationNumber(school.power), modifier = Modifier.weight(2f), textAlign = TextAlign.End)
                 }
             }
         }
