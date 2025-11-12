@@ -20,6 +20,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.takanakonbu.academiamagica.ui.navigation.navigationItems
 import com.takanakonbu.academiamagica.ui.screen.DepartmentScreen
 import com.takanakonbu.academiamagica.ui.screen.FacilityScreen
+import com.takanakonbu.academiamagica.ui.screen.PrestigeScreen
 import com.takanakonbu.academiamagica.ui.screen.SchoolScreen
 import com.takanakonbu.academiamagica.ui.theme.AcademiaMagicaTheme
 import com.takanakonbu.academiamagica.ui.viewmodel.GameViewModel
@@ -69,6 +70,7 @@ class MainActivity : ComponentActivity() {
                             0 -> SchoolScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
                             1 -> FacilityScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
                             2 -> DepartmentScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
+                            3 -> PrestigeScreen(gameViewModel = gameViewModel, paddingValues = innerPadding)
                         }
                     }
                 }
