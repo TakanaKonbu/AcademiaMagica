@@ -51,7 +51,8 @@ data class GameState(
         PrestigeSkillType.RESEARCH_DISCOUNT to PrestigeSkillState(),
         PrestigeSkillType.FACILITY_DISCOUNT to PrestigeSkillState(),
         PrestigeSkillType.STONE_BOOST to PrestigeSkillState(),
-        PrestigeSkillType.OFFLINE_TIME_EXTENSION to PrestigeSkillState()
+        PrestigeSkillType.OFFLINE_TIME_EXTENSION to PrestigeSkillState(),
+        PrestigeSkillType.MAGICAL_POWER_BOOST to PrestigeSkillState()
     ),
     val boostRemainingSeconds: Int = 0,
     val lastOnlineTimestamp: Long = System.currentTimeMillis()
@@ -137,7 +138,8 @@ enum class PrestigeSkillType {
     RESEARCH_DISCOUNT,   // 学科研究コスト割引
     FACILITY_DISCOUNT,   // 施設改築コスト割引
     STONE_BOOST,          // 賢者の石獲得量ボーナス
-    OFFLINE_TIME_EXTENSION // 放置可能時間延長
+    OFFLINE_TIME_EXTENSION, // 放置可能時間延長
+    MAGICAL_POWER_BOOST // 永続的な総合魔力ボーナス
 }
 
 /**

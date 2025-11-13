@@ -60,6 +60,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         // Prestige Skill Upgrade
         private const val PRESTIGE_SKILL_MAX_LEVEL_OFFLINE_TIME = 18
         private const val PRESTIGE_SKILL_MAX_LEVEL_DISCOUNT = 90
+        private val PRESTIGE_MAGICAL_POWER_BOOST_PER_LEVEL = BigDecimal("0.005")
 
         // Magical Power Calculation
         private val ATTACK_MAGIC_STUDENT_BONUS = BigDecimal(5)
@@ -372,6 +373,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         val libraryMultiplier = BigDecimal.ONE + (state.facilities[FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(DIMENSIONAL_LIBRARY_POWER_BONUS) ?: BigDecimal.ZERO)
 
+        val magicalPowerBoost = BigDecimal.ONE + (state.prestigeSkills[PrestigeSkillType.MAGICAL_POWER_BOOST]?.level?.toBigDecimal()?.multiply(PRESTIGE_MAGICAL_POWER_BOOST_PER_LEVEL) ?: BigDecimal.ZERO)
+
         val totalPower = basePower
             .multiply(studentBonus)
             .multiply(facilityMultiplier)
@@ -379,6 +382,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             .multiply(defenseStudentBonus) // 防衛魔法科の生徒による乗算ボーナス
             .multiply(ancientMagicBonus)
             .multiply(libraryMultiplier)
+            .multiply(magicalPowerBoost)
 
         return totalPower.setScale(MAGICAL_POWER_SCALE, RoundingMode.HALF_UP)
     }
