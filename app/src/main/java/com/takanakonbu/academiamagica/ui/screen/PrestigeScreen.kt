@@ -43,19 +43,15 @@ private fun PrestigeSkillType.toJapanese(): String = when (this) {
 fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
     val gameState by gameViewModel.gameState.collectAsState()
 
-    val botanyMultiplier = BigDecimal.ONE + (gameState.departments[com.takanakonbu.academiamagica.model.DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
-    val manaPerSecond = gameState.students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
-    val goldPerSecond = manaPerSecond.divide(BigDecimal(2), 2, RoundingMode.HALF_UP)
-
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
         item {
             val maxStudents = (gameState.facilities[com.takanakonbu.academiamagica.model.FacilityType.GREAT_HALL]?.level ?: 0) * 10
             OverallPowerCard(
                 totalMagicalPower = gameState.totalMagicalPower,
                 currentMana = gameState.mana,
-                manaPerSecond = manaPerSecond,
+                manaPerSecond = gameState.manaPerSecond,
                 currentGold = gameState.gold,
-                goldPerSecond = goldPerSecond,
+                goldPerSecond = gameState.goldPerSecond,
                 totalStudents = gameState.students.totalStudents,
                 maxStudents = maxStudents,
                 philosophersStones = gameState.philosophersStones
