@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.takanakonbu.academiamagica.model.DepartmentType
+import com.takanakonbu.academiamagica.ui.common.ActionButtons
 import com.takanakonbu.academiamagica.ui.common.OverallPowerCard
 import com.takanakonbu.academiamagica.ui.common.UpgradeItemCard
 import com.takanakonbu.academiamagica.ui.common.formatInflationNumber
@@ -62,6 +63,8 @@ fun SchoolScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 maxStudents = maxStudents,
                 philosophersStones = gameState.philosophersStones
             )
+            Spacer(modifier = Modifier.height(16.dp))
+            ActionButtons()
             Spacer(modifier = Modifier.height(16.dp))
         }
 
