@@ -207,8 +207,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val departmentState = currentState.departments[type] ?: return@update currentState
             if (departmentState.level >= currentState.maxDepartmentLevel) return@update currentState
 
-            val researchDiscount = BigDecimal.ONE - (currentState.prestigeSkills[PrestigeSkillType.RESEARCH_DISCOUNT]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
-            val libraryDiscount = BigDecimal.ONE - (currentState.facilities[com.takanakonbu.academiamagica.model.FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
+            val rawResearchDiscount = currentState.prestigeSkills[PrestigeSkillType.RESEARCH_DISCOUNT]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO
+            val researchDiscount = BigDecimal.ONE - rawResearchDiscount.min(BigDecimal("0.9")) // 最大90%割引
+
+            val rawLibraryDiscount = currentState.facilities[com.takanakonbu.academiamagica.model.FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO
+            val libraryDiscount = BigDecimal.ONE - rawLibraryDiscount.min(BigDecimal("0.9")) // 最大90%割引
             val cost = BigDecimal("1.5").pow(departmentState.level).multiply(BigDecimal(10)).multiply(libraryDiscount).multiply(researchDiscount).setScale(0, RoundingMode.CEILING)
 
             if (currentState.mana < cost) return@update currentState
@@ -229,7 +232,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _gameState.update { currentState ->
             val facilityState = currentState.facilities[type] ?: return@update currentState
 
-            val facilityDiscount = BigDecimal.ONE - (currentState.prestigeSkills[PrestigeSkillType.FACILITY_DISCOUNT]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
+            val rawFacilityDiscount = currentState.prestigeSkills[PrestigeSkillType.FACILITY_DISCOUNT]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO
+            val facilityDiscount = BigDecimal.ONE - rawFacilityDiscount.min(BigDecimal("0.9")) // 最大90%割引
             val cost = BigDecimal("2.0").pow(facilityState.level).multiply(BigDecimal(100)).multiply(facilityDiscount)
 
             if (currentState.gold < cost) return@update currentState
@@ -270,7 +274,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _gameState.update { currentState ->
             val skillState = currentState.prestigeSkills[type] ?: return@update currentState
 
-            if (type == PrestigeSkillType.OFFLINE_TIME_EXTENSION && skillState.level >= 18) {
+            val maxLevel = when (type) {
+                PrestigeSkillType.OFFLINE_TIME_EXTENSION -> 18
+                PrestigeSkillType.RESEARCH_DISCOUNT, PrestigeSkillType.FACILITY_DISCOUNT -> 90
+                else -> null
+            }
+
+            if (maxLevel != null && skillState.level >= maxLevel) {
                 return@update currentState
             }
 
