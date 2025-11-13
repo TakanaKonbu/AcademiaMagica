@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.takanakonbu.academiamagica.model.DepartmentType
 import com.takanakonbu.academiamagica.model.FacilityType
+import com.takanakonbu.academiamagica.model.PrestigeSkillType
 import com.takanakonbu.academiamagica.ui.common.ActionButtons
 import com.takanakonbu.academiamagica.ui.common.OverallPowerCard
 import com.takanakonbu.academiamagica.ui.common.UpgradeItemCard
@@ -57,8 +58,11 @@ fun DepartmentScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues)
         // --- 学科カテゴリ ---
         item { Spacer(Modifier.height(16.dp)); Text("📚 学科", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
         items(gameState.departments.entries.toList()) { (type, state) ->
-            val libraryDiscount = BigDecimal.ONE - (gameState.facilities[FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.01")) ?: BigDecimal.ZERO)
-            val cost = BigDecimal("1.5").pow(state.level).multiply(BigDecimal(10)).multiply(libraryDiscount).setScale(0, RoundingMode.CEILING)
+            val researchDiscountPerLevel = BigDecimal("0.01")
+            val maxDiscount = BigDecimal("0.9")
+            val rawResearchDiscount = gameState.prestigeSkills[PrestigeSkillType.RESEARCH_DISCOUNT]?.level?.toBigDecimal()?.multiply(researchDiscountPerLevel) ?: BigDecimal.ZERO
+            val researchDiscount = BigDecimal.ONE - rawResearchDiscount.min(maxDiscount)
+            val cost = BigDecimal("1.5").pow(state.level).multiply(BigDecimal(10)).multiply(researchDiscount).setScale(0, RoundingMode.CEILING)
             // GameStateから算出プロパティとして最大レベルを取得
             val maxLevel = gameState.maxDepartmentLevel
             val effectText = when(type) {

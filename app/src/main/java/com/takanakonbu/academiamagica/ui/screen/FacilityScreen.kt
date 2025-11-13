@@ -26,7 +26,6 @@ import java.math.BigDecimal
 private fun FacilityType.toJapanese(): String = when (this) {
     FacilityType.GREAT_HALL -> "🏰 大講堂"
     FacilityType.RESEARCH_WING -> "💡 研究棟"
-    FacilityType.DIMENSIONAL_LIBRARY -> "📚 次元図書館"
 }
 
 @Composable
@@ -59,7 +58,6 @@ fun FacilityScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 FacilityType.GREAT_HALL -> "生徒の最大定員を+10人増加させる"
                 // 研究棟の効果説明。GameStateで定義されたロジックと連動させる。
                 FacilityType.RESEARCH_WING -> "全ての学科の最大レベルを+5引き上げる"
-                FacilityType.DIMENSIONAL_LIBRARY -> "学科の研究コストを1%ずつ削減する"
             }
             UpgradeItemCard(
                 name = type.toJapanese(),

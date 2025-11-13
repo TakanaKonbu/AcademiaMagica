@@ -45,7 +45,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         private val DEPARTMENT_UPGRADE_COST_BASE = BigDecimal("1.5")
         private val DEPARTMENT_UPGRADE_COST_MULTIPLIER = BigDecimal(10)
         private val RESEARCH_DISCOUNT_PER_SKILL_LEVEL = BigDecimal("0.01")
-        private val LIBRARY_DISCOUNT_PER_LEVEL = BigDecimal("0.01")
         private val MAX_DISCOUNT = BigDecimal("0.9")
 
         // Facility Upgrade
@@ -268,9 +267,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val rawResearchDiscount = currentState.prestigeSkills[PrestigeSkillType.RESEARCH_DISCOUNT]?.level?.toBigDecimal()?.multiply(RESEARCH_DISCOUNT_PER_SKILL_LEVEL) ?: BigDecimal.ZERO
             val researchDiscount = BigDecimal.ONE - rawResearchDiscount.min(MAX_DISCOUNT)
 
-            val rawLibraryDiscount = currentState.facilities[FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(LIBRARY_DISCOUNT_PER_LEVEL) ?: BigDecimal.ZERO
-            val libraryDiscount = BigDecimal.ONE - rawLibraryDiscount.min(MAX_DISCOUNT)
-            val cost = DEPARTMENT_UPGRADE_COST_BASE.pow(departmentState.level).multiply(DEPARTMENT_UPGRADE_COST_MULTIPLIER).multiply(libraryDiscount).multiply(researchDiscount).setScale(0, RoundingMode.CEILING)
+            val cost = DEPARTMENT_UPGRADE_COST_BASE.pow(departmentState.level).multiply(DEPARTMENT_UPGRADE_COST_MULTIPLIER).multiply(researchDiscount).setScale(0, RoundingMode.CEILING)
 
             if (currentState.mana < cost) return@updateStateWithPowerRecalculation currentState
 
