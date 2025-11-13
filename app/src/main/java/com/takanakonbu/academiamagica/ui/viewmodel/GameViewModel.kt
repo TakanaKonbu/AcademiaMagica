@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.takanakonbu.academiamagica.model.DepartmentType
 import com.takanakonbu.academiamagica.model.GameState
+import com.takanakonbu.academiamagica.model.PrestigeSkillState
 import com.takanakonbu.academiamagica.model.PrestigeSkillType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,7 +63,9 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val offlineMinutes = elapsedSeconds / 60
 
             if (offlineMinutes > 0) {
-                val cappedMinutes = offlineMinutes.coerceAtMost(60)
+                val offlineTimeExtensionLevel = _gameState.value.prestigeSkills[PrestigeSkillType.OFFLINE_TIME_EXTENSION]?.level ?: 0
+                val maxOfflineMinutes = 60 + offlineTimeExtensionLevel * 10
+                val cappedMinutes = offlineMinutes.coerceAtMost(maxOfflineMinutes.toLong())
                 val manaGained = gameState.value.manaPerSecond.multiply(BigDecimal(cappedMinutes * 60))
                 val goldGained = gameState.value.goldPerSecond.multiply(BigDecimal(cappedMinutes * 60))
                 _offlineRewardState.value = OfflineRewardState(cappedMinutes, manaGained, goldGained)
@@ -136,7 +139,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val stateJson = getApplication<Application>().dataStore.data.first()[gameStateKey]
                 if (stateJson != null) {
-                    _gameState.value = json.decodeFromString<GameState>(stateJson)
+                    var loadedState = json.decodeFromString<GameState>(stateJson)
+                    val missingSkills = PrestigeSkillType.values().toSet() - loadedState.prestigeSkills.keys
+                    if (missingSkills.isNotEmpty()) {
+                        val newSkills = loadedState.prestigeSkills.toMutableMap()
+                        missingSkills.forEach { skill ->
+                            newSkills[skill] = PrestigeSkillState()
+                        }
+                        loadedState = loadedState.copy(prestigeSkills = newSkills)
+                    }
+                    _gameState.value = loadedState
                 }
             } finally {
                 _isLoading.value = false

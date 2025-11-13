@@ -29,6 +29,7 @@ private fun PrestigeSkillType.toJapanese(): String = when (this) {
     PrestigeSkillType.RESEARCH_DISCOUNT -> "📚 学科研究コスト割引"
     PrestigeSkillType.FACILITY_DISCOUNT -> "🏰 施設改築コスト割引"
     PrestigeSkillType.STONE_BOOST -> "💎 賢者の石獲得量ボーナス"
+    PrestigeSkillType.OFFLINE_TIME_EXTENSION -> "⏳ 放置可能時間延長"
 }
 
 @Composable
@@ -80,6 +81,11 @@ fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 PrestigeSkillType.RESEARCH_DISCOUNT -> "学科の研究コストがレベル毎に-1%されます。"
                 PrestigeSkillType.FACILITY_DISCOUNT -> "施設の改築コストがレベル毎に-1%されます。"
                 PrestigeSkillType.STONE_BOOST -> "周回時の賢者の石獲得量がレベル毎に+5%されます。"
+                PrestigeSkillType.OFFLINE_TIME_EXTENSION -> {
+                    val offlineTimeExtensionLevel = state.level
+                    val maxOfflineMinutes = 60 + offlineTimeExtensionLevel * 10
+                    "放置可能な時間がレベル毎に+10分されます。(現在: ${maxOfflineMinutes}分)"
+                }
             }
             UpgradeItemCard(
                 name = type.toJapanese(),

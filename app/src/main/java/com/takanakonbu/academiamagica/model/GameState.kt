@@ -50,7 +50,8 @@ data class GameState(
         PrestigeSkillType.GOLD_BOOST to PrestigeSkillState(),
         PrestigeSkillType.RESEARCH_DISCOUNT to PrestigeSkillState(),
         PrestigeSkillType.FACILITY_DISCOUNT to PrestigeSkillState(),
-        PrestigeSkillType.STONE_BOOST to PrestigeSkillState()
+        PrestigeSkillType.STONE_BOOST to PrestigeSkillState(),
+        PrestigeSkillType.OFFLINE_TIME_EXTENSION to PrestigeSkillState()
     ),
     val boostRemainingSeconds: Int = 0,
     val lastOnlineTimestamp: Long = System.currentTimeMillis()
@@ -135,7 +136,8 @@ enum class PrestigeSkillType {
     GOLD_BOOST,          // ゴールド生産量ボーナス
     RESEARCH_DISCOUNT,   // 学科研究コスト割引
     FACILITY_DISCOUNT,   // 施設改築コスト割引
-    STONE_BOOST          // 賢者の石獲得量ボーナス
+    STONE_BOOST,          // 賢者の石獲得量ボーナス
+    OFFLINE_TIME_EXTENSION // 放置可能時間延長
 }
 
 /**
