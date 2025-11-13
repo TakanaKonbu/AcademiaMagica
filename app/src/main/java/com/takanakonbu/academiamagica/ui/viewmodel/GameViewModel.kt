@@ -46,9 +46,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             while (true) {
                 kotlinx.coroutines.delay(1000) // 1秒待機
                 _gameState.update { currentState ->
+                    val newBoostTime = if (currentState.boostRemainingSeconds > 0) currentState.boostRemainingSeconds - 1 else 0
                     currentState.copy(
                         mana = currentState.mana.add(currentState.manaPerSecond),
-                        gold = currentState.gold.add(currentState.goldPerSecond)
+                        gold = currentState.gold.add(currentState.goldPerSecond),
+                        boostRemainingSeconds = newBoostTime
                     )
                 }
                 saveGame()
@@ -72,6 +74,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 mana = currentState.mana.multiply(BigDecimal(2)),
                 gold = currentState.gold.multiply(BigDecimal(2))
             )
+        }
+    }
+
+    fun startBoost() {
+        // TODO: リワード広告を実装する
+        _gameState.update { currentState ->
+            currentState.copy(boostRemainingSeconds = 600) // 10分 = 600秒
         }
     }
 

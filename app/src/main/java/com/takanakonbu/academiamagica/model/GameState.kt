@@ -51,7 +51,8 @@ data class GameState(
         PrestigeSkillType.RESEARCH_DISCOUNT to PrestigeSkillState(),
         PrestigeSkillType.FACILITY_DISCOUNT to PrestigeSkillState(),
         PrestigeSkillType.STONE_BOOST to PrestigeSkillState()
-    )
+    ),
+    val boostRemainingSeconds: Int = 0
 ) {
     /**
      * 研究棟のレベルに基づいて、全ての学科の最大レベルを計算する算出プロパティ。
@@ -68,7 +69,11 @@ data class GameState(
             val manaBoost = BigDecimal.ONE + (prestigeSkills[PrestigeSkillType.MANA_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
             val botanyMultiplier = BigDecimal.ONE + (departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
             val baseProduction = students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
-            return baseProduction.multiply(botanyStudentBonus).multiply(manaBoost)
+            var finalProduction = baseProduction.multiply(botanyStudentBonus).multiply(manaBoost)
+            if (boostRemainingSeconds > 0) {
+                finalProduction = finalProduction.multiply(BigDecimal(2))
+            }
+            return finalProduction
         }
 
     /**
@@ -80,7 +85,11 @@ data class GameState(
             val goldBoost = BigDecimal.ONE + (prestigeSkills[PrestigeSkillType.GOLD_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
             val botanyMultiplier = BigDecimal.ONE + (departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
             val baseProduction = students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
-            return baseProduction.divide(BigDecimal(2), 2, RoundingMode.HALF_UP).multiply(botanyStudentBonus).multiply(goldBoost)
+            var finalProduction = baseProduction.divide(BigDecimal(2), 2, RoundingMode.HALF_UP).multiply(botanyStudentBonus).multiply(goldBoost)
+            if (boostRemainingSeconds > 0) {
+                finalProduction = finalProduction.multiply(BigDecimal(2))
+            }
+            return finalProduction
         }
 }
 
