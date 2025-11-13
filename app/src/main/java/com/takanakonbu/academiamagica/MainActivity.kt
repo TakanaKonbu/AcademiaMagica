@@ -100,11 +100,13 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         mediaPlayer?.start()
+        gameViewModel.startGameLoop()
     }
 
     override fun onStop() {
         super.onStop()
         mediaPlayer?.pause()
+        gameViewModel.stopGameLoop()
     }
 
     override fun onDestroy() {

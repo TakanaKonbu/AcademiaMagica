@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.takanakonbu.academiamagica.model.DepartmentType
 import com.takanakonbu.academiamagica.model.GameState
 import com.takanakonbu.academiamagica.model.PrestigeSkillType
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,13 +32,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private val gameStateKey = stringPreferencesKey("game_state_json")
 
+    private var gameLoopJob: Job? = null
+
     init {
         loadGame()
-        startGameLoop()
     }
 
-    private fun startGameLoop() {
-        viewModelScope.launch {
+    fun startGameLoop() {
+        if (gameLoopJob?.isActive == true) return
+        gameLoopJob = viewModelScope.launch {
             while (true) {
                 kotlinx.coroutines.delay(1000) // 1秒待機
                 _gameState.update { currentState ->
@@ -49,6 +52,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 saveGame()
             }
         }
+    }
+
+    fun stopGameLoop() {
+        gameLoopJob?.cancel()
+        gameLoopJob = null
     }
 
     fun setSchoolName(name: String) {
@@ -224,6 +232,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } finally {
                 _isLoading.value = false
+                startGameLoop()
             }
         }
     }
