@@ -66,7 +66,7 @@ data class GameState(
     val manaPerSecond: BigDecimal
         get() {
             val botanyStudentBonus = BigDecimal.ONE + (students.specializedStudents[DepartmentType.BOTANY]?.toBigDecimal()?.multiply(BigDecimal("0.05")) ?: BigDecimal.ZERO)
-            val manaBoost = BigDecimal.ONE + (prestigeSkills[PrestigeSkillType.MANA_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
+            val manaBoost = BigDecimal.ONE + (prestigeSkills[PrestigeSkillType.MANA_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.3")) ?: BigDecimal.ZERO)
             val botanyMultiplier = BigDecimal.ONE + (departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
             val baseProduction = students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
             var finalProduction = baseProduction.multiply(botanyStudentBonus).multiply(manaBoost)
@@ -82,7 +82,7 @@ data class GameState(
     val goldPerSecond: BigDecimal
         get() {
             val botanyStudentBonus = BigDecimal.ONE + (students.specializedStudents[DepartmentType.BOTANY]?.toBigDecimal()?.multiply(BigDecimal("0.05")) ?: BigDecimal.ZERO)
-            val goldBoost = BigDecimal.ONE + (prestigeSkills[PrestigeSkillType.GOLD_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
+            val goldBoost = BigDecimal.ONE + (prestigeSkills[PrestigeSkillType.GOLD_BOOST]?.level?.toBigDecimal()?.multiply(BigDecimal("0.3")) ?: BigDecimal.ZERO)
             val botanyMultiplier = BigDecimal.ONE + (departments[DepartmentType.BOTANY]?.level?.toBigDecimal()?.multiply(BigDecimal("0.1")) ?: BigDecimal.ZERO)
             val baseProduction = students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
             var finalProduction = baseProduction.divide(BigDecimal(2), 2, RoundingMode.HALF_UP).multiply(botanyStudentBonus).multiply(goldBoost)

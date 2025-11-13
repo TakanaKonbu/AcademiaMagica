@@ -75,8 +75,8 @@ fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
         items(gameState.prestigeSkills.entries.toList()) { (type, state) ->
             val cost = (state.level + 1).toLong()
             val effectText = when(type) {
-                PrestigeSkillType.MANA_BOOST -> "マナの生産量がレベル毎に+10%されます。"
-                PrestigeSkillType.GOLD_BOOST -> "ゴールドの生産量がレベル毎に+10%されます。"
+                PrestigeSkillType.MANA_BOOST -> "マナの生産量がレベル毎に+30%されます。"
+                PrestigeSkillType.GOLD_BOOST -> "ゴールドの生産量がレベル毎に+30%されます。"
                 PrestigeSkillType.RESEARCH_DISCOUNT -> "学科の研究コストがレベル毎に-1%されます。"
                 PrestigeSkillType.FACILITY_DISCOUNT -> "施設の改築コストがレベル毎に-1%されます。"
                 PrestigeSkillType.STONE_BOOST -> "周回時の賢者の石獲得量がレベル毎に+5%されます。"
