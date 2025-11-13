@@ -91,7 +91,7 @@ fun OverallPowerCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                Text(text = "💠 総合魔力", fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+                Text(text = "🔮 総合魔力", fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
                 Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                 Text(text = "($playerRank 位)", fontFamily = FontFamily.Serif, fontSize = 16.sp, color = MaterialTheme.colorScheme.secondary)
             }
@@ -102,7 +102,7 @@ fun OverallPowerCard(
 
             // リソース表示
             listOf(
-                "♦️ マナ" to (currentMana to manaPerSecond),
+                "💠️ マナ" to (currentMana to manaPerSecond),
                 "💰 ゴールド" to (currentGold to goldPerSecond)
             ).forEach { (label, values) ->
                 val (current, perSecond) = values
@@ -121,7 +121,7 @@ fun OverallPowerCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "💎 賢者の石",
+                    text = "♦️ 賢者の石",
                     fontFamily = FontFamily.Serif,
                     fontSize = 20.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
