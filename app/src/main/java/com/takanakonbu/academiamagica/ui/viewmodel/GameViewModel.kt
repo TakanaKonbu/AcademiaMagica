@@ -65,6 +65,16 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         _gameState.update { it.copy(schoolName = name) }
     }
 
+    fun doubleManaAndGold() {
+        // TODO: リワード広告を実装する
+        _gameState.update { currentState ->
+            currentState.copy(
+                mana = currentState.mana.multiply(BigDecimal(2)),
+                gold = currentState.gold.multiply(BigDecimal(2))
+            )
+        }
+    }
+
     fun assignStudent(department: DepartmentType, amount: Int = 1) {
         _gameState.update { currentState ->
             if (currentState.students.unassignedStudents < amount) return@update currentState

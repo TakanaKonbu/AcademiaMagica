@@ -49,7 +49,7 @@ fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 philosophersStones = gameState.philosophersStones
             )
             Spacer(modifier = Modifier.height(16.dp))
-            ActionButtons()
+            ActionButtons(gameViewModel = gameViewModel)
             Spacer(modifier = Modifier.height(16.dp))
         }
 
