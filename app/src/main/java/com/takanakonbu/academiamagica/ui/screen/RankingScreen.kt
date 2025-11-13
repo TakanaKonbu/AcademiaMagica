@@ -55,22 +55,6 @@ fun RankingScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
 
     LazyColumn(modifier = Modifier.padding(paddingValues), state = lazyListState) {
         item {
-            val maxStudents = (gameState.facilities[com.takanakonbu.academiamagica.model.FacilityType.GREAT_HALL]?.level ?: 0) * 10
-            OverallPowerCard(
-                totalMagicalPower = gameState.totalMagicalPower,
-                currentMana = gameState.mana,
-                manaPerSecond = gameState.manaPerSecond,
-                currentGold = gameState.gold,
-                goldPerSecond = gameState.goldPerSecond,
-                totalStudents = gameState.students.totalStudents,
-                maxStudents = maxStudents,
-                philosophersStones = gameState.philosophersStones
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            ActionButtons(gameViewModel = gameViewModel)
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        item {
             // 現在の順位と次の目標を表示するカード
             Card(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
                 Column(
