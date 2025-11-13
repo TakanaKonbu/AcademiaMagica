@@ -23,12 +23,21 @@ import java.math.RoundingMode
 
 private val Application.dataStore by preferencesDataStore(name = "game_state")
 
+data class OfflineRewardState(
+    val minutes: Long = 0,
+    val manaGained: BigDecimal = BigDecimal.ZERO,
+    val goldGained: BigDecimal = BigDecimal.ZERO
+)
+
 class GameViewModel(application: Application) : AndroidViewModel(application) {
     private val _gameState = MutableStateFlow(GameState())
     val gameState: StateFlow<GameState> = _gameState
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _offlineRewardState = MutableStateFlow<OfflineRewardState?>(null)
+    val offlineRewardState: StateFlow<OfflineRewardState?> = _offlineRewardState.asStateFlow()
 
     private val gameStateKey = stringPreferencesKey("game_state_json")
 
@@ -40,17 +49,71 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         loadGame()
     }
 
+    fun onAppForegrounded() {
+        viewModelScope.launch {
+            _isLoading.first { !it }
+
+            if (gameLoopJob?.isActive == true) {
+                return@launch
+            }
+
+            val now = System.currentTimeMillis()
+            val elapsedSeconds = (now - gameState.value.lastOnlineTimestamp) / 1000
+            val offlineMinutes = elapsedSeconds / 60
+
+            if (offlineMinutes > 0) {
+                val cappedMinutes = offlineMinutes.coerceAtMost(60)
+                val manaGained = gameState.value.manaPerSecond.multiply(BigDecimal(cappedMinutes * 60))
+                val goldGained = gameState.value.goldPerSecond.multiply(BigDecimal(cappedMinutes * 60))
+                _offlineRewardState.value = OfflineRewardState(cappedMinutes, manaGained, goldGained)
+            } else {
+                startGameLoop()
+            }
+        }
+    }
+
+    fun onAppBackgrounded() {
+        stopGameLoop()
+        saveGame()
+    }
+
+    fun dismissOfflineRewardDialog() {
+        val reward = _offlineRewardState.value ?: return
+        _gameState.update { currentState ->
+            currentState.copy(
+                mana = currentState.mana.add(reward.manaGained),
+                gold = currentState.gold.add(reward.goldGained)
+            )
+        }
+        _offlineRewardState.value = null
+        startGameLoop()
+    }
+
+    fun doubleOfflineReward() {
+        // TODO: リワード広告を実装
+        val reward = _offlineRewardState.value ?: return
+        _gameState.update { currentState ->
+            currentState.copy(
+                mana = currentState.mana.add(reward.manaGained.multiply(BigDecimal(2))),
+                gold = currentState.gold.add(reward.goldGained.multiply(BigDecimal(2)))
+            )
+        }
+        _offlineRewardState.value = null
+        startGameLoop()
+    }
+
     fun startGameLoop() {
         if (gameLoopJob?.isActive == true) return
         gameLoopJob = viewModelScope.launch {
             while (true) {
-                kotlinx.coroutines.delay(1000) // 1秒待機
+                kotlinx.coroutines.delay(1000)
                 _gameState.update { currentState ->
                     val newBoostTime = if (currentState.boostRemainingSeconds > 0) currentState.boostRemainingSeconds - 1 else 0
                     currentState.copy(
                         mana = currentState.mana.add(currentState.manaPerSecond),
                         gold = currentState.gold.add(currentState.goldPerSecond),
-                        boostRemainingSeconds = newBoostTime
+                        boostRemainingSeconds = newBoostTime,
+                        lastOnlineTimestamp = System.currentTimeMillis()
                     )
                 }
                 saveGame()
@@ -65,6 +128,28 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setSchoolName(name: String) {
         _gameState.update { it.copy(schoolName = name) }
+    }
+
+    private fun loadGame() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val stateJson = getApplication<Application>().dataStore.data.first()[gameStateKey]
+                if (stateJson != null) {
+                    _gameState.value = json.decodeFromString<GameState>(stateJson)
+                }
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun saveGame() {
+        viewModelScope.launch {
+            getApplication<Application>().dataStore.edit {
+                it[gameStateKey] = json.encodeToString(gameState.value)
+            }
+        }
     }
 
     fun doubleManaAndGold() {
@@ -232,29 +317,6 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 philosophersStones = currentState.philosophersStones + newStones,
                 prestigeSkills = currentState.prestigeSkills
             )
-        }
-    }
-
-    fun saveGame() {
-        viewModelScope.launch {
-            getApplication<Application>().dataStore.edit {
-                it[gameStateKey] = json.encodeToString(gameState.value)
-            }
-        }
-    }
-
-    fun loadGame() {
-        viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                val stateJson = getApplication<Application>().dataStore.data.first()[gameStateKey]
-                if (stateJson != null) {
-                    _gameState.value = json.decodeFromString<GameState>(stateJson)
-                }
-            } finally {
-                _isLoading.value = false
-                startGameLoop()
-            }
         }
     }
 }

@@ -21,6 +21,8 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.takanakonbu.academiamagica.ui.common.NameInputDialog
+import com.takanakonbu.academiamagica.ui.common.OfflineRewardDialog
+import com.takanakonbu.academiamagica.ui.common.formatInflationNumber
 import com.takanakonbu.academiamagica.ui.navigation.navigationItems
 import com.takanakonbu.academiamagica.ui.screen.DepartmentScreen
 import com.takanakonbu.academiamagica.ui.screen.FacilityScreen
@@ -51,6 +53,17 @@ class MainActivity : ComponentActivity() {
             AcademiaMagicaTheme {
                 val gameState by gameViewModel.gameState.collectAsState()
                 val isLoading by gameViewModel.isLoading.collectAsState()
+                val offlineRewardState by gameViewModel.offlineRewardState.collectAsState()
+
+                offlineRewardState?.let { reward ->
+                    OfflineRewardDialog(
+                        minutes = reward.minutes,
+                        manaGained = formatInflationNumber(reward.manaGained),
+                        goldGained = formatInflationNumber(reward.goldGained),
+                        onDismiss = { gameViewModel.dismissOfflineRewardDialog() },
+                        onConfirm = { gameViewModel.doubleOfflineReward() }
+                    )
+                }
 
                 if (!isLoading && gameState.schoolName.isBlank()) {
                     NameInputDialog(onNameSet = {
@@ -100,13 +113,13 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         mediaPlayer?.start()
-        gameViewModel.startGameLoop()
+        gameViewModel.onAppForegrounded()
     }
 
     override fun onStop() {
         super.onStop()
         mediaPlayer?.pause()
-        gameViewModel.stopGameLoop()
+        gameViewModel.onAppBackgrounded()
     }
 
     override fun onDestroy() {

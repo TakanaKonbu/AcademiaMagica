@@ -52,7 +52,8 @@ data class GameState(
         PrestigeSkillType.FACILITY_DISCOUNT to PrestigeSkillState(),
         PrestigeSkillType.STONE_BOOST to PrestigeSkillState()
     ),
-    val boostRemainingSeconds: Int = 0
+    val boostRemainingSeconds: Int = 0,
+    val lastOnlineTimestamp: Long = System.currentTimeMillis()
 ) {
     /**
      * 研究棟のレベルに基づいて、全ての学科の最大レベルを計算する算出プロパティ。
