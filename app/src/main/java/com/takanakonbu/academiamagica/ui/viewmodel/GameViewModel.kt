@@ -34,6 +34,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     private var gameLoopJob: Job? = null
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     init {
         loadGame()
     }
@@ -217,7 +219,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun saveGame() {
         viewModelScope.launch {
             getApplication<Application>().dataStore.edit {
-                it[gameStateKey] = Json.encodeToString(gameState.value)
+                it[gameStateKey] = json.encodeToString(gameState.value)
             }
         }
     }
@@ -228,7 +230,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val stateJson = getApplication<Application>().dataStore.data.first()[gameStateKey]
                 if (stateJson != null) {
-                    _gameState.value = Json.decodeFromString<GameState>(stateJson)
+                    _gameState.value = json.decodeFromString<GameState>(stateJson)
                 }
             } finally {
                 _isLoading.value = false
