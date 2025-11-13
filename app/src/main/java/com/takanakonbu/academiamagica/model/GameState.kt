@@ -41,7 +41,8 @@ data class GameState(
     ),
     val facilities: Map<FacilityType, FacilityState> = mapOf(
         FacilityType.GREAT_HALL to FacilityState(level = 1),
-        FacilityType.RESEARCH_WING to FacilityState(level = 1)
+        FacilityType.RESEARCH_WING to FacilityState(level = 1),
+        FacilityType.DIMENSIONAL_LIBRARY to FacilityState()
     ),
     val students: StudentState = StudentState(totalStudents = 3),
     val prestigeSkills: Map<PrestigeSkillType, PrestigeSkillState> = mapOf(
@@ -111,7 +112,7 @@ data class DepartmentState(val level: Int = 0)
 
 @Serializable
 enum class FacilityType {
-    GREAT_HALL, RESEARCH_WING
+    GREAT_HALL, RESEARCH_WING, DIMENSIONAL_LIBRARY
 }
 
 @Serializable
