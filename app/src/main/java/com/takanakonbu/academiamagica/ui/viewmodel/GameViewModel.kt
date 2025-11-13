@@ -269,6 +269,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     fun upgradePrestigeSkill(type: PrestigeSkillType) {
         _gameState.update { currentState ->
             val skillState = currentState.prestigeSkills[type] ?: return@update currentState
+
+            if (type == PrestigeSkillType.OFFLINE_TIME_EXTENSION && skillState.level >= 18) {
+                return@update currentState
+            }
+
             val cost = (skillState.level + 1).toLong()
 
             if (currentState.philosophersStones < cost) return@update currentState
@@ -320,7 +325,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
             // --- 超越スキルによるボーナス ---
             val stoneBoost = 1.0 + (currentState.prestigeSkills[PrestigeSkillType.STONE_BOOST]?.level?.toDouble()?.times(0.05) ?: 0.0)
-            val ancientMagicBonus = 1.0 + (currentState.departments[DepartmentType.ANCIENT_MAGIC]?.level?.toDouble()?.times(0.1) ?: 0.0)
+            val ancientMagicBonus = 1.0 + (currentState.departments[com.takanakonbu.academiamagica.model.DepartmentType.ANCIENT_MAGIC]?.level?.toDouble()?.times(0.1) ?: 0.0)
             if (currentState.totalMagicalPower <= BigDecimal.ONE) return@update currentState
             val newStones = (Math.log10(currentState.totalMagicalPower.toDouble()) * ancientMagicBonus * stoneBoost * ancientMagicStudentBonus).toLong()
 

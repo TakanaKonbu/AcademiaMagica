@@ -75,6 +75,8 @@ fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
         item { Spacer(Modifier.height(16.dp)); Text("💎 超越スキル", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
         items(gameState.prestigeSkills.entries.toList()) { (type, state) ->
             val cost = (state.level + 1).toLong()
+            val maxLevel = if (type == PrestigeSkillType.OFFLINE_TIME_EXTENSION) 18 else null
+
             val effectText = when(type) {
                 PrestigeSkillType.MANA_BOOST -> "マナの生産量がレベル毎に+30%されます。"
                 PrestigeSkillType.GOLD_BOOST -> "ゴールドの生産量がレベル毎に+30%されます。"
@@ -90,9 +92,10 @@ fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
             UpgradeItemCard(
                 name = type.toJapanese(),
                 level = state.level,
+                maxLevel = maxLevel,
                 effect = effectText,
-                costText = "強化 (賢者の石: $cost)",
-                isEnabled = gameState.philosophersStones >= cost,
+                costText = if (maxLevel != null && state.level >= maxLevel) "最大レベル" else "強化 (賢者の石: $cost)",
+                isEnabled = gameState.philosophersStones >= cost && (maxLevel == null || state.level < maxLevel),
                 onUpgrade = { gameViewModel.upgradePrestigeSkill(type) }
             )
         }
