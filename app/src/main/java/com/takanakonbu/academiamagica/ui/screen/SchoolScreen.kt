@@ -52,16 +52,8 @@ fun SchoolScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
 
     LazyColumn(modifier = Modifier.padding(paddingValues)) {
         item {
-            val maxStudents = (gameState.facilities[com.takanakonbu.academiamagica.model.FacilityType.GREAT_HALL]?.level ?: 0) * 10
             OverallPowerCard(
-                totalMagicalPower = gameState.totalMagicalPower,
-                currentMana = gameState.mana,
-                manaPerSecond = gameState.manaPerSecond, // 修正
-                currentGold = gameState.gold,
-                goldPerSecond = gameState.goldPerSecond, // 修正
-                totalStudents = gameState.students.totalStudents,
-                maxStudents = maxStudents,
-                philosophersStones = gameState.philosophersStones
+                gameState = gameState
             )
             Spacer(modifier = Modifier.height(16.dp))
             ActionButtons(gameViewModel = gameViewModel)

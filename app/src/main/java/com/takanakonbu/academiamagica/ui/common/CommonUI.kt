@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.takanakonbu.academiamagica.model.GameState
 import com.takanakonbu.academiamagica.model.SchoolRanking
 import com.takanakonbu.academiamagica.ui.theme.AmethystPurple
 import java.math.BigDecimal
@@ -70,16 +71,11 @@ fun UpgradeItemCard(
 
 @Composable
 fun OverallPowerCard(
-    totalMagicalPower: BigDecimal,
-    currentMana: BigDecimal,
-    manaPerSecond: BigDecimal,
-    currentGold: BigDecimal,
-    goldPerSecond: BigDecimal,
-    totalStudents: Int,
-    maxStudents: Int,
-    philosophersStones: Long
+    gameState: GameState
 ) {
-    val playerRank = (SchoolRanking.rivals.count { it.power > totalMagicalPower } + 1)
+    val playerRank = (SchoolRanking.rivals.count { it.power > gameState.totalMagicalPower } + 1)
+    val maxStudents = gameState.facilities[com.takanakonbu.academiamagica.model.FacilityType.GREAT_HALL]?.level?.times(10) ?: 0
+
 
     Card(
         modifier = Modifier.fillMaxWidth().padding(8.dp),
@@ -90,57 +86,77 @@ fun OverallPowerCard(
             modifier = Modifier.padding(16.dp).fillMaxWidth(), // 中央揃えのためにfillMaxWidthを追加
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                Text(text = "🔮 総合魔力", fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
-                Spacer(modifier = Modifier.padding(horizontal = 8.dp))
-                Text(text = "($playerRank 位)", fontFamily = FontFamily.Serif, fontSize = 16.sp, color = MaterialTheme.colorScheme.secondary)
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = formatInflationNumber(totalMagicalPower), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 32.sp, color = MaterialTheme.colorScheme.primary)
-
+            TotalMagicalPowerDisplay(totalMagicalPower = gameState.totalMagicalPower, playerRank = playerRank)
             Spacer(modifier = Modifier.height(24.dp))
-
-            // リソース表示
-            listOf(
-                "💠️ マナ" to (currentMana to manaPerSecond),
-                "💰 ゴールド" to (currentGold to goldPerSecond)
-            ).forEach { (label, values) ->
-                val (current, perSecond) = values
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = label, fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
-                    Text(text = formatInflationNumber(current), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
-                }
-                Text(text = "(+${formatInflationNumber(perSecond)}/秒)", modifier = Modifier.fillMaxWidth(), fontFamily = FontFamily.Serif, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), textAlign = TextAlign.End)
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // 賢者の石
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "♦️ 賢者の石",
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                )
-                Text(
-                    text = "$philosophersStones 個",
-                    fontFamily = FontFamily.Serif,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
+            ResourceDisplay(
+                label = "💠️ マナ",
+                current = gameState.mana,
+                perSecond = gameState.manaPerSecond
+            )
             Spacer(modifier = Modifier.height(16.dp))
-
-            // 生徒数
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "👥 生徒数", fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
-                Text(text = "$totalStudents / $maxStudents 人", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
-            }
+            ResourceDisplay(
+                label = "💰 ゴールド",
+                current = gameState.gold,
+                perSecond = gameState.goldPerSecond
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            PhilosophersStoneDisplay(philosophersStones = gameState.philosophersStones)
+            Spacer(modifier = Modifier.height(16.dp))
+            StudentDisplay(
+                totalStudents = gameState.students.totalStudents,
+                maxStudents = maxStudents
+            )
         }
+    }
+}
+
+@Composable
+private fun TotalMagicalPowerDisplay(totalMagicalPower: BigDecimal, playerRank: Int) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+        Text(text = "🔮 総合魔力", fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+        Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+        Text(text = "($playerRank 位)", fontFamily = FontFamily.Serif, fontSize = 16.sp, color = MaterialTheme.colorScheme.secondary)
+    }
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(text = formatInflationNumber(totalMagicalPower), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 32.sp, color = MaterialTheme.colorScheme.primary)
+}
+
+@Composable
+private fun ResourceDisplay(label: String, current: BigDecimal, perSecond: BigDecimal) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Text(text = label, fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+        Text(text = formatInflationNumber(current), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
+    }
+    Text(text = "(+${formatInflationNumber(perSecond)}/秒)", modifier = Modifier.fillMaxWidth(), fontFamily = FontFamily.Serif, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f), textAlign = TextAlign.End)
+}
+
+@Composable
+private fun PhilosophersStoneDisplay(philosophersStones: Long) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "♦️ 賢者の石",
+            fontFamily = FontFamily.Serif,
+            fontSize = 20.sp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+        )
+        Text(
+            text = "$philosophersStones 個",
+            fontFamily = FontFamily.Serif,
+            fontWeight = FontWeight.Bold,
+            fontSize = 24.sp,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+    }
+}
+
+@Composable
+private fun StudentDisplay(totalStudents: Int, maxStudents: Int) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Text(text = "👥 生徒数", fontFamily = FontFamily.Serif, fontSize = 20.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))
+        Text(text = "$totalStudents / $maxStudents 人", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 24.sp, color = MaterialTheme.colorScheme.onSurface)
     }
 }
