@@ -86,7 +86,7 @@ fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                     val maxOfflineMinutes = 60 + offlineTimeExtensionLevel * 10
                     "放置可能な時間がレベル毎に+10分されます。(現在: ${maxOfflineMinutes}分)"
                 }
-                PrestigeSkillType.MAGICAL_POWER_BOOST -> "永続的に総合魔力がレベル毎に+0.5%されます。"
+                PrestigeSkillType.MAGICAL_POWER_BOOST -> "永続的に総合魔力がレベル毎に+0.5%されます。(複利効果)"
             }
             UpgradeItemCard(
                 name = type.toJapanese(),

@@ -373,7 +373,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
         val libraryMultiplier = BigDecimal.ONE + (state.facilities[FacilityType.DIMENSIONAL_LIBRARY]?.level?.toBigDecimal()?.multiply(DIMENSIONAL_LIBRARY_POWER_BONUS) ?: BigDecimal.ZERO)
 
-        val magicalPowerBoost = BigDecimal.ONE + (state.prestigeSkills[PrestigeSkillType.MAGICAL_POWER_BOOST]?.level?.toBigDecimal()?.multiply(PRESTIGE_MAGICAL_POWER_BOOST_PER_LEVEL) ?: BigDecimal.ZERO)
+        val magicalPowerBoostLevel = state.prestigeSkills[PrestigeSkillType.MAGICAL_POWER_BOOST]?.level ?: 0
+        val magicalPowerBoost = (BigDecimal.ONE + PRESTIGE_MAGICAL_POWER_BOOST_PER_LEVEL).pow(magicalPowerBoostLevel)
 
         val totalPower = basePower
             .multiply(studentBonus)
