@@ -28,7 +28,7 @@ private fun DepartmentType.toJapanese(): String = when (this) {
     DepartmentType.BOTANY -> "🌿 魔法植物学科"
     DepartmentType.DEFENSE_MAGIC -> "🛡️ 防衛魔術科"
     DepartmentType.ANCIENT_MAGIC -> "📜 古代魔術科"
-    DepartmentType.MAGIC_CREATURE_STUDIES -> "🐉 魔法生物学科"
+    DepartmentType.MAGIC_CREATURE_STUDIES -> "🦄 魔法生物学科"
 }
 
 @Composable
