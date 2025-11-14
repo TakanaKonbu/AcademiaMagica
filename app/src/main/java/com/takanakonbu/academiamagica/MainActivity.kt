@@ -61,7 +61,6 @@ class MainActivity : ComponentActivity() {
                         minutes = reward.minutes,
                         manaGained = formatInflationNumber(reward.manaGained),
                         goldGained = formatInflationNumber(reward.goldGained),
-                        manaGoldRewardMultiplier = reward.manaGoldRewardMultiplier.setScale(2, RoundingMode.HALF_UP).toPlainString(),
                         onDismiss = { gameViewModel.dismissOfflineRewardDialog() },
                         onConfirm = { gameViewModel.doubleOfflineReward() }
                     )

@@ -30,8 +30,7 @@ private val Application.dataStore by preferencesDataStore(name = "game_state")
 data class OfflineRewardState(
     val minutes: Long = 0,
     val manaGained: BigDecimal = BigDecimal.ZERO,
-    val goldGained: BigDecimal = BigDecimal.ZERO,
-    val manaGoldRewardMultiplier: BigDecimal = BigDecimal.ZERO
+    val goldGained: BigDecimal = BigDecimal.ZERO
 )
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
@@ -121,7 +120,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val cappedMinutes = offlineMinutes.coerceAtMost(maxOfflineMinutes.toLong())
                 val manaGained = gameState.value.manaPerSecond.multiply(BigDecimal(cappedMinutes * 60))
                 val goldGained = gameState.value.goldPerSecond.multiply(BigDecimal(cappedMinutes * 60))
-                _offlineRewardState.value = OfflineRewardState(cappedMinutes, manaGained, goldGained, _gameState.value.manaGoldRewardMultiplier)
+                _offlineRewardState.value = OfflineRewardState(cappedMinutes, manaGained, goldGained)
             } else {
                 startGameLoop()
             }
@@ -149,8 +148,8 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         val reward = _offlineRewardState.value ?: return
         _gameState.update { currentState ->
             currentState.copy(
-                mana = currentState.mana.add(reward.manaGained.multiply(currentState.manaGoldRewardMultiplier)),
-                gold = currentState.gold.add(reward.goldGained.multiply(currentState.manaGoldRewardMultiplier))
+                mana = currentState.mana.add(reward.manaGained.multiply(BigDecimal(2))),
+                gold = currentState.gold.add(reward.goldGained.multiply(BigDecimal(2)))
             )
         }
         _offlineRewardState.value = null

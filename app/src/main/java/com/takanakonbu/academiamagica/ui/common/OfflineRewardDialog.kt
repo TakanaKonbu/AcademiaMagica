@@ -10,7 +10,6 @@ fun OfflineRewardDialog(
     minutes: Long,
     manaGained: String,
     goldGained: String,
-    manaGoldRewardMultiplier: String,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
@@ -24,7 +23,7 @@ fun OfflineRewardDialog(
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("広告を見て${manaGoldRewardMultiplier}倍")
+                Text("広告を見て2倍")
             }
         },
         dismissButton = {
