@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.takanakonbu.academiamagica.ui.viewmodel.GameViewModel
+import java.math.RoundingMode
 
 @Composable
 fun ActionButtons(
@@ -30,10 +31,11 @@ fun ActionButtons(
     var showBoostDialog by remember { mutableStateOf(false) }
 
     if (showManaGoldDialog) {
+        val multiplier = gameState.manaGoldRewardMultiplier.setScale(2, RoundingMode.HALF_UP).toPlainString()
         AlertDialog(
             onDismissRequest = { showManaGoldDialog = false },
             title = { Text("広告を見てマナ/ゴールドを獲得") },
-            text = { Text("広告を視聴して、現在のマナとゴールドを2倍にしますか？") },
+            text = { Text("広告を視聴して、現在のマナとゴールドを${multiplier}倍にしますか？") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -55,10 +57,11 @@ fun ActionButtons(
     }
 
     if (showBoostDialog) {
+        val multiplier = gameState.productionBoostMultiplier.setScale(2, RoundingMode.HALF_UP).toPlainString()
         AlertDialog(
             onDismissRequest = { showBoostDialog = false },
             title = { Text("広告を見て生産をブースト") },
-            text = { Text("広告を視聴して、10分間マナとゴールドの生産量を4倍にしますか？") },
+            text = { Text("広告を視聴して、10分間マナとゴールドの生産量を${multiplier}倍にしますか？") },
             confirmButton = {
                 TextButton(
                     onClick = {
