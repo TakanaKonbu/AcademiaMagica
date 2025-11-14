@@ -58,7 +58,7 @@ fun ActionButtons(
         AlertDialog(
             onDismissRequest = { showBoostDialog = false },
             title = { Text("広告を見て生産をブースト") },
-            text = { Text("広告を視聴して、10分間マナとゴールドの生産量を2倍にしますか？") },
+            text = { Text("広告を視聴して、10分間マナとゴールドの生産量を4倍にしますか？") },
             confirmButton = {
                 TextButton(
                     onClick = {

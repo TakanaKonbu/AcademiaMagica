@@ -74,7 +74,7 @@ data class GameState(
             val baseProduction = students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
             var finalProduction = baseProduction.multiply(botanyStudentBonus).multiply(manaBoost)
             if (boostRemainingSeconds > 0) {
-                finalProduction = finalProduction.multiply(BigDecimal(2))
+                finalProduction = finalProduction.multiply(BigDecimal(4))
             }
             return finalProduction
         }
@@ -90,7 +90,7 @@ data class GameState(
             val baseProduction = students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
             var finalProduction = baseProduction.divide(BigDecimal(2), 2, RoundingMode.HALF_UP).multiply(botanyStudentBonus).multiply(goldBoost)
             if (boostRemainingSeconds > 0) {
-                finalProduction = finalProduction.multiply(BigDecimal(2))
+                finalProduction = finalProduction.multiply(BigDecimal(4))
             }
             return finalProduction
         }
