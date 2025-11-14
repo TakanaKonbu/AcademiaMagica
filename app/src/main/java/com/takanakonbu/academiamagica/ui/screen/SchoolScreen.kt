@@ -41,6 +41,7 @@ private fun DepartmentType.toJapanese(): String = when (this) {
     DepartmentType.BOTANY -> "🌿 植物学"
     DepartmentType.DEFENSE_MAGIC -> "🛡️ 防衛魔法"
     DepartmentType.ANCIENT_MAGIC -> "📖 古代魔術"
+    DepartmentType.MAGIC_CREATURE_STUDIES -> "🐉 魔法生物学"
 }
 
 @Composable
@@ -109,6 +110,7 @@ fun SchoolScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                 DepartmentType.BOTANY -> "効果: マナ/ゴールド生産量 +5%/人"
                 DepartmentType.DEFENSE_MAGIC -> "効果: 総合魔力ボーナス +1%/人"
                 DepartmentType.ANCIENT_MAGIC -> "効果: 賢者の石獲得量 +1%/人"
+                DepartmentType.MAGIC_CREATURE_STUDIES -> "効果: リワード広告のボーナス +0.5%/人"
             }
             Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)) {
                 Column(modifier = Modifier.padding(16.dp)) {

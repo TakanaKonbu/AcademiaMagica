@@ -32,6 +32,7 @@ import com.takanakonbu.academiamagica.ui.screen.SchoolScreen
 import com.takanakonbu.academiamagica.ui.theme.AcademiaMagicaTheme
 import com.takanakonbu.academiamagica.ui.viewmodel.GameViewModel
 import kotlinx.coroutines.launch
+import java.math.RoundingMode
 
 class MainActivity : ComponentActivity() {
 
@@ -60,6 +61,7 @@ class MainActivity : ComponentActivity() {
                         minutes = reward.minutes,
                         manaGained = formatInflationNumber(reward.manaGained),
                         goldGained = formatInflationNumber(reward.goldGained),
+                        manaGoldRewardMultiplier = reward.manaGoldRewardMultiplier.setScale(2, RoundingMode.HALF_UP).toPlainString(),
                         onDismiss = { gameViewModel.dismissOfflineRewardDialog() },
                         onConfirm = { gameViewModel.doubleOfflineReward() }
                     )

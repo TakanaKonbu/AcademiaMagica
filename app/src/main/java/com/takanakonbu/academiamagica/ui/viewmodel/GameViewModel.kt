@@ -6,7 +6,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.takanakonbu.academiamagica.model.DepartmentState
 import com.takanakonbu.academiamagica.model.DepartmentType
+import com.takanakonbu.academiamagica.model.FacilityState
 import com.takanakonbu.academiamagica.model.FacilityType
 import com.takanakonbu.academiamagica.model.GameState
 import com.takanakonbu.academiamagica.model.PrestigeSkillState
@@ -28,7 +30,8 @@ private val Application.dataStore by preferencesDataStore(name = "game_state")
 data class OfflineRewardState(
     val minutes: Long = 0,
     val manaGained: BigDecimal = BigDecimal.ZERO,
-    val goldGained: BigDecimal = BigDecimal.ZERO
+    val goldGained: BigDecimal = BigDecimal.ZERO,
+    val manaGoldRewardMultiplier: BigDecimal = BigDecimal.ZERO
 )
 
 class GameViewModel(application: Application) : AndroidViewModel(application) {
@@ -118,7 +121,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val cappedMinutes = offlineMinutes.coerceAtMost(maxOfflineMinutes.toLong())
                 val manaGained = gameState.value.manaPerSecond.multiply(BigDecimal(cappedMinutes * 60))
                 val goldGained = gameState.value.goldPerSecond.multiply(BigDecimal(cappedMinutes * 60))
-                _offlineRewardState.value = OfflineRewardState(cappedMinutes, manaGained, goldGained)
+                _offlineRewardState.value = OfflineRewardState(cappedMinutes, manaGained, goldGained, _gameState.value.manaGoldRewardMultiplier)
             } else {
                 startGameLoop()
             }
@@ -143,12 +146,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun doubleOfflineReward() {
-        // TODO: リワード広告を実装
         val reward = _offlineRewardState.value ?: return
         _gameState.update { currentState ->
             currentState.copy(
-                mana = currentState.mana.add(reward.manaGained.multiply(BigDecimal(2))),
-                gold = currentState.gold.add(reward.goldGained.multiply(BigDecimal(2)))
+                mana = currentState.mana.add(reward.manaGained.multiply(currentState.manaGoldRewardMultiplier)),
+                gold = currentState.gold.add(reward.goldGained.multiply(currentState.manaGoldRewardMultiplier))
             )
         }
         _offlineRewardState.value = null
@@ -190,6 +192,25 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                 val stateJson = getApplication<Application>().dataStore.data.first()[gameStateKey]
                 if (stateJson != null) {
                     var loadedState = json.decodeFromString<GameState>(stateJson)
+
+                    val missingDepartments = DepartmentType.values().toSet() - loadedState.departments.keys
+                    if (missingDepartments.isNotEmpty()) {
+                        val newDepartments = loadedState.departments.toMutableMap()
+                        missingDepartments.forEach { department ->
+                            newDepartments[department] = DepartmentState()
+                        }
+                        loadedState = loadedState.copy(departments = newDepartments)
+                    }
+
+                    val missingFacilities = FacilityType.values().toSet() - loadedState.facilities.keys
+                    if (missingFacilities.isNotEmpty()) {
+                        val newFacilities = loadedState.facilities.toMutableMap()
+                        missingFacilities.forEach { facility ->
+                            newFacilities[facility] = FacilityState()
+                        }
+                        loadedState = loadedState.copy(facilities = newFacilities)
+                    }
+
                     val missingSkills = PrestigeSkillType.values().toSet() - loadedState.prestigeSkills.keys
                     if (missingSkills.isNotEmpty()) {
                         val newSkills = loadedState.prestigeSkills.toMutableMap()
@@ -215,17 +236,15 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun doubleManaAndGold() {
-        // TODO: リワード広告を実装する
         _gameState.update { currentState ->
             currentState.copy(
-                mana = currentState.mana.multiply(BigDecimal(2)),
-                gold = currentState.gold.multiply(BigDecimal(2))
+                mana = currentState.mana.multiply(currentState.manaGoldRewardMultiplier),
+                gold = currentState.gold.multiply(currentState.manaGoldRewardMultiplier)
             )
         }
     }
 
     fun startBoost() {
-        // TODO: リワード広告を実装する
         _gameState.update { currentState ->
             currentState.copy(boostRemainingSeconds = BOOST_DURATION_SECONDS)
         }

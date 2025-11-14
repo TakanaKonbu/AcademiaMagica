@@ -16,60 +16,57 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.takanakonbu.academiamagica.model.DepartmentType
-import com.takanakonbu.academiamagica.model.FacilityType
-import com.takanakonbu.academiamagica.model.PrestigeSkillType
 import com.takanakonbu.academiamagica.ui.common.ActionButtons
 import com.takanakonbu.academiamagica.ui.common.OverallPowerCard
 import com.takanakonbu.academiamagica.ui.common.UpgradeItemCard
 import com.takanakonbu.academiamagica.ui.common.formatInflationNumber
 import com.takanakonbu.academiamagica.ui.viewmodel.GameViewModel
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 private fun DepartmentType.toJapanese(): String = when (this) {
-    DepartmentType.ATTACK_MAGIC -> "🔥 攻撃魔法"
-    DepartmentType.BOTANY -> "🌿 植物学"
-    DepartmentType.DEFENSE_MAGIC -> "🛡️ 防衛魔法"
-    DepartmentType.ANCIENT_MAGIC -> "📖 古代魔術"
+    DepartmentType.ATTACK_MAGIC -> "⚔️ 攻撃魔術科"
+    DepartmentType.BOTANY -> "🌿 魔法植物学科"
+    DepartmentType.DEFENSE_MAGIC -> "🛡️ 防衛魔術科"
+    DepartmentType.ANCIENT_MAGIC -> "📜 古代魔術科"
+    DepartmentType.MAGIC_CREATURE_STUDIES -> "🐉 魔法生物学科"
 }
 
 @Composable
-fun DepartmentScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
+fun DepartmentScreen(
+    gameViewModel: GameViewModel,
+    paddingValues: PaddingValues
+) {
     val gameState by gameViewModel.gameState.collectAsState()
 
-    LazyColumn(modifier = Modifier.padding(paddingValues)) {
+    LazyColumn(
+        modifier = Modifier.padding(paddingValues)
+    ) {
         item {
-            OverallPowerCard(
-                gameState = gameState
-            )
+            OverallPowerCard(gameState = gameState)
             Spacer(modifier = Modifier.height(16.dp))
             ActionButtons(gameViewModel = gameViewModel)
             Spacer(modifier = Modifier.height(16.dp))
+            Text("学科", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp))
+            Spacer(Modifier.height(4.dp))
         }
 
-        // --- 学科カテゴリ ---
-        item { Spacer(Modifier.height(16.dp)); Text("📚 学科", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
         items(gameState.departments.entries.toList()) { (type, state) ->
-            val researchDiscountPerLevel = BigDecimal("0.01")
-            val maxDiscount = BigDecimal("0.9")
-            val rawResearchDiscount = gameState.prestigeSkills[PrestigeSkillType.RESEARCH_DISCOUNT]?.level?.toBigDecimal()?.multiply(researchDiscountPerLevel) ?: BigDecimal.ZERO
-            val researchDiscount = BigDecimal.ONE - rawResearchDiscount.min(maxDiscount)
-            val cost = BigDecimal("1.5").pow(state.level).multiply(BigDecimal(10)).multiply(researchDiscount).setScale(0, RoundingMode.CEILING)
-            // GameStateから算出プロパティとして最大レベルを取得
-            val maxLevel = gameState.maxDepartmentLevel
-            val effectText = when(type) {
-                DepartmentType.ATTACK_MAGIC -> "総合魔力の基本値を+10増加させる"
-                DepartmentType.BOTANY -> "マナとゴールドの生産量に+10%の乗算ボーナス"
-                DepartmentType.DEFENSE_MAGIC -> "総合魔力に+5%の乗算ボーナス"
-                DepartmentType.ANCIENT_MAGIC -> "周回時の賢者の石獲得量に+2%ボーナス"
+            val cost = BigDecimal("1.5").pow(state.level).multiply(BigDecimal(10))
+            val effectText = when (type) {
+                DepartmentType.ATTACK_MAGIC -> "攻撃魔術の基礎値がレベル毎に+10されます。"
+                DepartmentType.BOTANY -> "マナとゴールドの生産量がレベル毎に+10%されます。"
+                DepartmentType.DEFENSE_MAGIC -> "総合魔力にレベル毎に+5%のボーナスを得ます。"
+                DepartmentType.ANCIENT_MAGIC -> "周回時の賢者の石獲得量がレベル毎に+10%されます。"
+                DepartmentType.MAGIC_CREATURE_STUDIES -> "リワード広告のボーナスがレベル毎に+0.5%されます。"
             }
+
             UpgradeItemCard(
                 name = type.toJapanese(),
                 level = state.level,
-                maxLevel = maxLevel,
+                maxLevel = gameState.maxDepartmentLevel,
                 effect = effectText,
-                costText = "研究 (マナ: ${formatInflationNumber(cost)})",
-                isEnabled = gameState.mana >= cost && state.level < maxLevel,
+                costText = "研究 (Mana: ${formatInflationNumber(cost)})",
+                isEnabled = gameState.mana >= cost && state.level < gameState.maxDepartmentLevel,
                 onUpgrade = { gameViewModel.upgradeDepartment(type) }
             )
         }

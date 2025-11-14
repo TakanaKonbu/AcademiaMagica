@@ -33,27 +33,10 @@ data class GameState(
     @Serializable(with = BigDecimalSerializer::class)
     val totalMagicalPower: BigDecimal = BigDecimal.ZERO,
     val philosophersStones: Long = 0,
-    val departments: Map<DepartmentType, DepartmentState> = mapOf(
-        DepartmentType.ATTACK_MAGIC to DepartmentState(),
-        DepartmentType.BOTANY to DepartmentState(),
-        DepartmentType.DEFENSE_MAGIC to DepartmentState(),
-        DepartmentType.ANCIENT_MAGIC to DepartmentState()
-    ),
-    val facilities: Map<FacilityType, FacilityState> = mapOf(
-        FacilityType.GREAT_HALL to FacilityState(level = 1),
-        FacilityType.RESEARCH_WING to FacilityState(level = 1),
-        FacilityType.DIMENSIONAL_LIBRARY to FacilityState()
-    ),
+    val departments: Map<DepartmentType, DepartmentState> = DepartmentType.values().associateWith { DepartmentState() },
+    val facilities: Map<FacilityType, FacilityState> = FacilityType.values().associateWith { if (it == FacilityType.GREAT_HALL || it == FacilityType.RESEARCH_WING) FacilityState(level = 1) else FacilityState() },
     val students: StudentState = StudentState(totalStudents = 3),
-    val prestigeSkills: Map<PrestigeSkillType, PrestigeSkillState> = mapOf(
-        PrestigeSkillType.MANA_BOOST to PrestigeSkillState(),
-        PrestigeSkillType.GOLD_BOOST to PrestigeSkillState(),
-        PrestigeSkillType.RESEARCH_DISCOUNT to PrestigeSkillState(),
-        PrestigeSkillType.FACILITY_DISCOUNT to PrestigeSkillState(),
-        PrestigeSkillType.STONE_BOOST to PrestigeSkillState(),
-        PrestigeSkillType.OFFLINE_TIME_EXTENSION to PrestigeSkillState(),
-        PrestigeSkillType.MAGICAL_POWER_BOOST to PrestigeSkillState()
-    ),
+    val prestigeSkills: Map<PrestigeSkillType, PrestigeSkillState> = PrestigeSkillType.values().associateWith { PrestigeSkillState() },
     val boostRemainingSeconds: Int = 0,
     val lastOnlineTimestamp: Long = System.currentTimeMillis()
 ) {
@@ -62,6 +45,25 @@ data class GameState(
      */
     val maxDepartmentLevel: Int
         get() = (facilities[FacilityType.RESEARCH_WING]?.level ?: 0) * 5
+
+    private val rewardBonusMultiplier: BigDecimal
+        get() {
+            val magicCreatureStudents = students.specializedStudents[DepartmentType.MAGIC_CREATURE_STUDIES] ?: 0
+            val breedingHutLevel = facilities[FacilityType.BREEDING_HUT]?.level ?: 0
+            val rewardSkillLevel = prestigeSkills[PrestigeSkillType.REWARD_BOOST]?.level ?: 0
+
+            val studentBonus = BigDecimal(magicCreatureStudents).multiply(BigDecimal("0.005"))
+            val facilityBonus = BigDecimal(breedingHutLevel).multiply(BigDecimal("0.01"))
+            val skillBonus = BigDecimal(rewardSkillLevel).multiply(BigDecimal("0.10"))
+
+            return BigDecimal.ONE + studentBonus + facilityBonus + skillBonus
+        }
+
+    val manaGoldRewardMultiplier: BigDecimal
+        get() = BigDecimal(2).multiply(rewardBonusMultiplier)
+
+    val productionBoostMultiplier: BigDecimal
+        get() = BigDecimal(4).multiply(rewardBonusMultiplier)
 
     /**
      * 毎秒のマナ生産量を計算する。すべてのボーナス（学科レベル、生徒配属、超越スキル）を含む。
@@ -74,7 +76,7 @@ data class GameState(
             val baseProduction = students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
             var finalProduction = baseProduction.multiply(botanyStudentBonus).multiply(manaBoost)
             if (boostRemainingSeconds > 0) {
-                finalProduction = finalProduction.multiply(BigDecimal(4))
+                finalProduction = finalProduction.multiply(productionBoostMultiplier)
             }
             return finalProduction
         }
@@ -90,7 +92,7 @@ data class GameState(
             val baseProduction = students.totalStudents.toBigDecimal().multiply(botanyMultiplier)
             var finalProduction = baseProduction.divide(BigDecimal(2), 2, RoundingMode.HALF_UP).multiply(botanyStudentBonus).multiply(goldBoost)
             if (boostRemainingSeconds > 0) {
-                finalProduction = finalProduction.multiply(BigDecimal(4))
+                finalProduction = finalProduction.multiply(productionBoostMultiplier)
             }
             return finalProduction
         }
@@ -105,7 +107,9 @@ enum class DepartmentType {
     // 生徒配属効果: 1人につき総合魔力+1% (乗算)
     DEFENSE_MAGIC,
     // 生徒配属効果: 1人につき賢者の石獲得量+1% (乗算)
-    ANCIENT_MAGIC
+    ANCIENT_MAGIC,
+    // 生徒配属効果: 1人につきリワードボーナス+0.5% (加算)
+    MAGIC_CREATURE_STUDIES
 }
 
 @Serializable
@@ -113,7 +117,7 @@ data class DepartmentState(val level: Int = 0)
 
 @Serializable
 enum class FacilityType {
-    GREAT_HALL, RESEARCH_WING, DIMENSIONAL_LIBRARY
+    GREAT_HALL, RESEARCH_WING, DIMENSIONAL_LIBRARY, BREEDING_HUT
 }
 
 @Serializable
@@ -139,7 +143,8 @@ enum class PrestigeSkillType {
     FACILITY_DISCOUNT,   // 施設改築コスト割引
     STONE_BOOST,          // 賢者の石獲得量ボーナス
     OFFLINE_TIME_EXTENSION, // 放置可能時間延長
-    MAGICAL_POWER_BOOST // 永続的な総合魔力ボーナス
+    MAGICAL_POWER_BOOST, // 永続的な総合魔力ボーナス
+    REWARD_BOOST // リワード広告ボーナス
 }
 
 /**

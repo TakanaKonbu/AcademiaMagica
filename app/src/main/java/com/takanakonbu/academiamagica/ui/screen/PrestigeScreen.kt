@@ -31,6 +31,7 @@ private fun PrestigeSkillType.toJapanese(): String = when (this) {
     PrestigeSkillType.STONE_BOOST -> "💎 賢者の石獲得量ボーナス"
     PrestigeSkillType.OFFLINE_TIME_EXTENSION -> "⏳ 放置可能時間延長"
     PrestigeSkillType.MAGICAL_POWER_BOOST -> "🔮 永続的な総合魔力ボーナス"
+    PrestigeSkillType.REWARD_BOOST -> "🎬️ リワードボーナス"
 }
 
 @Composable
@@ -87,6 +88,7 @@ fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
                     "放置可能な時間がレベル毎に+10分されます。(現在: ${maxOfflineMinutes}分)"
                 }
                 PrestigeSkillType.MAGICAL_POWER_BOOST -> "永続的に総合魔力がレベル毎に+0.5%されます。(複利効果)"
+                PrestigeSkillType.REWARD_BOOST -> "リワード広告のボーナスがレベル毎に+10%されます。"
             }
             UpgradeItemCard(
                 name = type.toJapanese(),

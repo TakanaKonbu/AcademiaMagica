@@ -24,16 +24,22 @@ import com.takanakonbu.academiamagica.ui.viewmodel.GameViewModel
 import java.math.BigDecimal
 
 private fun FacilityType.toJapanese(): String = when (this) {
-    FacilityType.GREAT_HALL -> "🏰 大講堂"
-    FacilityType.RESEARCH_WING -> "💡 研究棟"
-    FacilityType.DIMENSIONAL_LIBRARY -> "📚 次元図書館"
+    FacilityType.GREAT_HALL -> "🏫 大広間"
+    FacilityType.RESEARCH_WING -> "🔬 研究棟"
+    FacilityType.DIMENSIONAL_LIBRARY -> "📚 次元の図書館"
+    FacilityType.BREEDING_HUT -> "🏡 飼育小屋"
 }
 
 @Composable
-fun FacilityScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
+fun FacilityScreen(
+    gameViewModel: GameViewModel,
+    paddingValues: PaddingValues
+) {
     val gameState by gameViewModel.gameState.collectAsState()
 
-    LazyColumn(modifier = Modifier.padding(paddingValues)) {
+    LazyColumn(
+        modifier = Modifier.padding(paddingValues)
+    ) {
         item {
             OverallPowerCard(
                 gameState = gameState
@@ -41,23 +47,23 @@ fun FacilityScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
             Spacer(modifier = Modifier.height(16.dp))
             ActionButtons(gameViewModel = gameViewModel)
             Spacer(modifier = Modifier.height(16.dp))
+            Text("施設", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp))
+            Spacer(Modifier.height(4.dp))
         }
 
-        // --- 施設カテゴリ ---
-        item { Text("🏰 施設", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
         items(gameState.facilities.entries.toList()) { (type, state) ->
             val cost = BigDecimal("2.0").pow(state.level).multiply(BigDecimal(100))
             val effectText = when(type) {
-                FacilityType.GREAT_HALL -> "生徒の最大定員を+10人増加させる"
-                // 研究棟の効果説明。GameStateで定義されたロジックと連動させる。
-                FacilityType.RESEARCH_WING -> "全ての学科の最大レベルを+5引き上げる"
-                FacilityType.DIMENSIONAL_LIBRARY -> "総合魔力に+1%の乗算ボーナス"
+                FacilityType.GREAT_HALL -> "生徒の最大人数がレベル毎に10人増加します。"
+                FacilityType.RESEARCH_WING -> "学科の最大レベルがレベル毎に5増加します。"
+                FacilityType.DIMENSIONAL_LIBRARY -> "総合魔力にレベル毎に+1%のボーナスを得ます。"
+                FacilityType.BREEDING_HUT -> "リワード広告のボーナスがレベル毎に+1%されます。"
             }
             UpgradeItemCard(
                 name = type.toJapanese(),
                 level = state.level,
                 effect = effectText,
-                costText = "改築 (ゴールド: ${formatInflationNumber(cost)})",
+                costText = "改築 (Gold: ${formatInflationNumber(cost)})",
                 isEnabled = gameState.gold >= cost,
                 onUpgrade = { gameViewModel.upgradeFacility(type) }
             )
