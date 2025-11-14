@@ -51,8 +51,9 @@ fun PrestigeScreen(gameViewModel: GameViewModel, paddingValues: PaddingValues) {
         item { Text("✨ 超越リセット", fontFamily = FontFamily.Serif, fontSize = 18.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 16.dp)); Spacer(Modifier.height(4.dp)) }
         item {
             val stoneBoost = 1.0 + (gameState.prestigeSkills[PrestigeSkillType.STONE_BOOST]?.level?.toDouble()?.times(0.05) ?: 0.0)
-            val ancientMagicBonus = 1.0 + (gameState.departments[com.takanakonbu.academiamagica.model.DepartmentType.ANCIENT_MAGIC]?.level?.toDouble()?.times(0.1) ?: 0.0)
-            val newStones = if (gameState.totalMagicalPower <= BigDecimal.ONE) 0 else (Math.log10(gameState.totalMagicalPower.toDouble()) * ancientMagicBonus * stoneBoost).toLong()
+            val ancientMagicDepartmentBonus = 1.0 + (gameState.departments[com.takanakonbu.academiamagica.model.DepartmentType.ANCIENT_MAGIC]?.level?.toDouble()?.times(0.1) ?: 0.0)
+            val ancientMagicStudentBonus = 1.0 + (gameState.students.specializedStudents[com.takanakonbu.academiamagica.model.DepartmentType.ANCIENT_MAGIC]?.toDouble()?.times(0.01) ?: 0.0)
+            val newStones = if (gameState.totalMagicalPower <= BigDecimal.ONE) 0 else (Math.log10(gameState.totalMagicalPower.toDouble()) * ancientMagicDepartmentBonus * stoneBoost * ancientMagicStudentBonus).toLong()
             UpgradeItemCard(
                 name = "💫 周回リセット",
                 level = gameState.philosophersStones.toInt(),
